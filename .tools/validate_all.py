@@ -66,7 +66,25 @@ for w in M:
     print('== %s / %s : %d 页' % (w['author'], w['title'], len(files)))
     check([os.path.join(w['author'], w['dir'], f) for f in files], len(files))
 
-# 2) 教员专题：仅校验含 window.PAGE 的阅读页；选节/选卷页只查存在
+# 2) 斯大林：两部著作的阅读页与导航页
+st_reading = []
+st_landings = []
+for root2, _, fs in os.walk(os.path.join(ROOT, '斯大林')):
+    for f in fs:
+        if f.endswith('.html') and 'index.html' not in f:
+            fp = os.path.join(root2, f)
+            html = open(fp, encoding='utf-8').read()
+            if 'window.PAGE' in html:
+                st_reading.append(os.path.relpath(fp, ROOT))
+            else:
+                st_landings.append(os.path.relpath(fp, ROOT))
+print('== 斯大林 : %d 阅读页 + %d 导航页' % (len(st_reading), len(st_landings)))
+check(st_reading, len(st_reading))
+for f in st_landings:
+    if not os.path.exists(os.path.join(ROOT, f)):
+        print('MISSING:', f); problems += 1
+
+# 3) 教员专题：仅校验含 window.PAGE 的阅读页；选节/选卷页只查存在
 reading = []
 landings = []
 for root2, _, fs in os.walk(os.path.join(ROOT, '教员', '专题')):

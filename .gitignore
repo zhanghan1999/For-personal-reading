@@ -1,3 +1,8 @@
 # Python cache
 __pycache__/
 *.pyc
+
+# 本地工具运行产物（不入库）
+.tools/sources/stalin/_pylib/
+.tools/sources/stalin/_wheels/
+.tools/sources/stalin/sidalin-quanji.pdf

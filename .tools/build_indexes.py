@@ -81,15 +81,14 @@ def main():
     page = build_author('列宁', [])
     open(os.path.join(ROOT, '列宁', 'index.html'), 'w', encoding='utf-8').write(page)
 
-    # 斯大林：已收《论辩证唯物主义和历史唯物主义》，其余待补
+    # 斯大林：两篇均已入库
     stalin_cards = [
+        CARD.format(href='论列宁主义基础.html', title='论列宁主义基础',
+                    stat='引言 + 九节 · 在斯维尔德洛夫大学的讲演（1924）'),
         CARD.format(href='论辩证唯物主义和历史唯物主义.html', title='论辩证唯物主义和历史唯物主义',
                     stat='全文 1 篇 · 《联共（布）党史简明教程》第四章第二节'),
     ]
-    stalin_note = '''<div style="text-align:center;color:#9a9080;font-size:13px;margin-top:26px;letter-spacing:1px;line-height:2">
-《论列宁主义基础》（1924）的简体中文全文电子版暂未取得可靠文本源（仅见整册 PDF），正在整理中，敬请期待。
-</div>'''
-    stalin_html = mentor_page('斯大林', stalin_cards).replace('</main>', stalin_note + '\n</main>')
+    stalin_html = mentor_page('斯大林', stalin_cards)
     open(os.path.join(ROOT, '斯大林', 'index.html'), 'w', encoding='utf-8').write(stalin_html)
 
     # 教员：毛选 + 专题
@@ -146,7 +145,7 @@ def main():
 <a class="mentor-card" href="斯大林/index.html">
   <div class="avatar"><span class="ph">斯</span></div>
   <div class="name">斯大林</div>
-  <div class="works">论辩证唯物主义和历史唯物主义 · 论列宁主义基础整理中</div>
+  <div class="works">论列宁主义基础 · 论辩证唯物主义和历史唯物主义</div>
   <div class="go">进入著作 &#8594;</div>
 </a>
 
