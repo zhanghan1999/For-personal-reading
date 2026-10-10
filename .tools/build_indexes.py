@@ -91,9 +91,10 @@ def main():
     stalin_html = mentor_page('斯大林', stalin_cards)
     open(os.path.join(ROOT, '斯大林', 'index.html'), 'w', encoding='utf-8').write(stalin_html)
 
-    # 教员：毛选 + 专题
+    # 教员：毛选 + 军事文集 + 专题
     mao_cards = [
         CARD.format(href='毛选.html', title='毛泽东选集', stat='全五卷 · 230 篇文章'),
+        CARD.format(href='军事文集.html', title='毛泽东军事文集', stat='六卷 · 1612 篇 · 1927—1972 年军事著作'),
         CARD.format(href='专题.html', title='毛泽东思想经典篇目', stat='实践论 · 矛盾论 · 中国革命战争的战略问题 · 论持久战'),
     ]
     open(os.path.join(ROOT, '教员', 'index.html'), 'w', encoding='utf-8').write(
@@ -152,7 +153,7 @@ def main():
 <a class="mentor-card" href="教员/index.html">
   <div class="avatar"><span class="ph">毛</span></div>
   <div class="name">毛泽东</div>
-  <div class="works">《毛泽东选集》全五卷 · 经典篇目专题</div>
+  <div class="works">《毛泽东选集》全五卷 · 军事文集六卷 · 经典篇目专题</div>
   <div class="go">进入著作 &#8594;</div>
 </a>
 
