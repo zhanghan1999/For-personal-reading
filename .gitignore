@@ -2,7 +2,11 @@
 __pycache__/
 *.pyc
 
-# 本地工具运行产物（不入库）
+# 中间产物/源数据（不入库，留本地）
+.tools/sources/
+教员/毛选/来源数据/
+马克思/资本论/旧版合并页/
+马克思/.tools/
 .tools/sources/stalin/_pylib/
 .tools/sources/stalin/_wheels/
 .tools/sources/stalin/sidalin-quanji.pdf
