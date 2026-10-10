@@ -212,7 +212,7 @@ def main():
             f.write(page_html)
         print('wrote', os.path.join(WORKDIR, e['fname']))
 
-    # —— 选卷页 ——
+    # —— 选卷页（位于 斯大林/<landing>.html，阅读页在 斯大林/论列宁主义基础/，链接需带目录前缀）——
     cards = []
     for i, e in enumerate(entries, 1):
         cards.append('''<a class="card" href="{href}">
@@ -220,7 +220,7 @@ def main():
   <div class="ed">1924年版</div>
   <div class="stat">{title}</div>
   <div class="go">打开阅读 &#8594;</div>
-</a>'''.format(href=e['fname'], vol='引言' if i == 1 else '第%d节' % (i - 1), title=e['title']))
+</a>'''.format(href='论列宁主义基础/' + e['fname'], vol='引言' if i == 1 else '第%d节' % (i - 1), title=e['title']))
     landing = '''<!DOCTYPE html>
 <html lang="zh-CN">
 <head>

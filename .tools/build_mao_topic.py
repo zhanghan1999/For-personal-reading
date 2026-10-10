@@ -154,7 +154,11 @@ def build_topic_pages(work):
     entries = []
     for i, pg in enumerate(pages, 1):
         title = pg['title']
-        fname = safe_filename(title, i)
+        if len(pages) == 1:
+            # 单篇作品直接以标题命名（与选卷页 landing 同名）
+            fname = re.sub(r'[\\/:*?"<>|\n\r\t 　]+', '', title) + '.html'
+        else:
+            fname = safe_filename(title, i)
         entries.append({'idx': i, 'title': title, 'fname': fname})
 
     toc_groups = [{'label': None, 'items': [
@@ -193,7 +197,7 @@ def build_topic_pages(work):
             f.write(page_html)
         print('  wrote', os.path.relpath(out, ROOT))
 
-    # —— 选节/选章页 ——
+    # —— 选节/选章页（位于 教员/专题/<landing>.html，阅读页在 教员/专题/<topic_dir>/，链接需带目录前缀）——
     if len(pages) > 1:
         cards = []
         for i, e in enumerate(entries, 1):
@@ -203,7 +207,7 @@ def build_topic_pages(work):
   <div class="stat">{stat}</div>
   <div class="go">打开阅读 &#8594;</div>
 </a>'''.format(
-                href=e['fname'],
+                href='%s/%s' % (work['topic_dir'], e['fname']),
                 vol='第%d节' % i if work.get('unit') == '节' else '第%d章' % i,
                 ed=work.get('edition', ''),
                 stat=e['title'],
@@ -254,7 +258,7 @@ def build_work_landing(title, sub, cards, footer):
 def build_topic_index(works):
     cards = []
     for w in works:
-        cards.append('''<a class="card" href="{href}">
+        cards.append('''<a class="card" href="专题/{href}">
   <div class="vol">{title}</div>
   <div class="ed">{ed}</div>
   <div class="stat">{stat}</div>

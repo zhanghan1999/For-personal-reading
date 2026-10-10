@@ -114,6 +114,11 @@ def build_work(work):
         entries.append({'idx': i, 'title': title, 'fname': fname,
                         'parsed': parsed})
 
+    # 源文页内自带的“目录表”链接指向源文件（如 MEW21-008.html），改为本页对应章节
+    src_map = {}
+    for i, sf in enumerate(src_files, 1):
+        src_map[os.path.basename(sf['path'])] = entries[i - 1]['fname']
+
     toc_groups = [{'label': None, 'items': [
         {'num': str(e['idx']), 'title': e['title'], 'href': e['fname']}
         for e in entries
@@ -127,8 +132,8 @@ def build_work(work):
     footer = work.get('footer', '')
 
     for i, e in enumerate(entries):
-        prev = entries[i - 1] if i > 1 else None
-        nxt = entries[i] if i < len(entries) else None
+        prev = entries[i - 1] if i > 0 else None
+        nxt = entries[i + 1] if i + 1 < len(entries) else None
         page_html = render_article(
             e['parsed'],
             art_idx=1,
@@ -143,14 +148,17 @@ def build_work(work):
             home_href=home,
             assets=assets,
         )
+        # 正文内源“目录表”链接重写为目标章节页
+        for k, v in src_map.items():
+            page_html = page_html.replace('href="%s"' % k, 'href="%s"' % v)
         out = os.path.join(work_dir, e['fname'])
         with open(out, 'w', encoding='utf-8') as f:
             f.write(page_html)
         print('  wrote', os.path.relpath(out, ROOT))
 
-    # 选卷页
+    # 选卷页（位于 作者/<landing>.html，阅读页在 作者/<dir>/，链接需带目录前缀）
     landing_entries = [{'vol': '第%d篇' % e['idx'] if len(entries) > 1 else '全文',
-                        'href': e['fname'],
+                        'href': '%s/%s' % (work['dir'], e['fname']),
                         'ed': work.get('edition', ''),
                         'stat': e['title']} for e in entries]
     landing = build_landing_page(work, landing_entries, entries[0]['fname'])

@@ -166,7 +166,7 @@ def main():
     <div class="meta"><a href="../index.html">&#8678; 返回首页</a></div>
   </header>
   <main class="cards">
-<a class="card" href="{href}">
+<a class="card" href="论辩证唯物主义和历史唯物主义/{href}">
   <div class="vol">全文</div>
   <div class="ed">1938年版</div>
   <div class="stat">{title}</div>
