@@ -1,0 +1,226 @@
+{
+  "works": [
+    {
+      "id": "gcdxy",
+      "author": "马克思",
+      "title": "共产党宣言",
+      "dir": "共产党宣言",
+      "landing": "共产党宣言.html",
+      "brand": "共产党宣言",
+      "voltag": "《马克思恩格斯全集》第4卷",
+      "edition": "1848年版",
+      "range": "1847年12月—1848年1月写成 · 1848年2月出版",
+      "sub": "卡·马克思 弗·恩格斯 合著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯全集》第一版第4卷（1961年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [ {"path": "raw/MEW4-045.html"} ]
+    },
+    {
+      "id": "febak",
+      "author": "马克思",
+      "title": "关于费尔巴哈的提纲",
+      "dir": "关于费尔巴哈的提纲",
+      "landing": "关于费尔巴哈的提纲.html",
+      "brand": "关于费尔巴哈的提纲",
+      "voltag": "《马克思恩格斯全集》第3卷",
+      "edition": "1845年版",
+      "range": "1845年写于布鲁塞尔 · 1888年首次发表",
+      "sub": "卡·马克思 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯全集》第一版第3卷（1960年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [ {"path": "raw/MEW3-002.html"} ]
+    },
+    {
+      "id": "zzjjpp",
+      "author": "马克思",
+      "title": "政治经济学批判",
+      "dir": "政治经济学批判",
+      "landing": "政治经济学批判.html",
+      "brand": "政治经济学批判",
+      "voltag": "《马克思恩格斯全集》第13卷",
+      "edition": "1859年版",
+      "range": "1858年8月—1859年1月写成 · 1859年出版",
+      "sub": "第一分册 · 卡·马克思 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯全集》第一版第13卷（1962年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [
+        {"path": "raw/MEW13-002.html"},
+        {"path": "raw/MEW13-003.html"},
+        {"path": "raw/MEW13-004.html"}
+      ]
+    },
+    {
+      "id": "shzy",
+      "author": "恩格斯",
+      "title": "社会主义从空想到科学的发展",
+      "dir": "社会主义从空想到科学的发展",
+      "landing": "社会主义从空想到科学的发展.html",
+      "brand": "社会主义从空想到科学的发展",
+      "voltag": "《马克思恩格斯全集》第19卷",
+      "edition": "1880年版",
+      "range": "1880年写成 · 摘自《反杜林论》",
+      "sub": "弗·恩格斯 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯全集》第一版第19卷（1963年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [
+        {"path": "raw/MEW19-046.html"},
+        {"path": "raw/MEW19-020.html"},
+        {"path": "raw/MEW19-023.html"}
+      ]
+    },
+    {
+      "id": "jiating",
+      "author": "恩格斯",
+      "title": "家庭、私有制和国家的起源",
+      "dir": "家庭、私有制和国家的起源",
+      "landing": "家庭、私有制和国家的起源.html",
+      "brand": "家庭、私有制和国家的起源",
+      "voltag": "《马克思恩格斯全集》第21卷",
+      "edition": "1884年版",
+      "range": "1884年3月底—5月底写成",
+      "sub": "就路易斯·亨·摩尔根的研究成果而作 · 弗·恩格斯 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯全集》第一版第21卷（1965年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [
+        {"path": "raw/MEW21-005.html"}, {"path": "raw/MEW21-006.html"},
+        {"path": "raw/MEW21-007.html"}, {"path": "raw/MEW21-008.html"},
+        {"path": "raw/MEW21-009.html"}, {"path": "raw/MEW21-010.html"},
+        {"path": "raw/MEW21-011.html"}, {"path": "raw/MEW21-012.html"},
+        {"path": "raw/MEW21-013.html"}, {"path": "raw/MEW21-014.html"},
+        {"path": "raw/MEW21-015.html"}
+      ]
+    },
+    {
+      "id": "febaka",
+      "author": "恩格斯",
+      "title": "路德维希·费尔巴哈和德国古典哲学的终结",
+      "dir": "路德维希·费尔巴哈和德国古典哲学的终结",
+      "landing": "路德维希·费尔巴哈和德国古典哲学的终结.html",
+      "brand": "路德维希·费尔巴哈和德国古典哲学的终结",
+      "voltag": "《马克思恩格斯全集》第21卷",
+      "edition": "1886年版",
+      "range": "1886年初写成 · 1888年出版单行本",
+      "sub": "弗·恩格斯 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯全集》第一版第21卷（1965年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [
+        {"path": "raw/MEW21-040.html"},
+        {"path": "raw/MEW21-030.html"}
+      ]
+    },
+    {
+      "id": "fandulin",
+      "author": "恩格斯",
+      "title": "反杜林论",
+      "dir": "反杜林论",
+      "landing": "反杜林论.html",
+      "brand": "反杜林论",
+      "voltag": "《马克思恩格斯全集》第20卷",
+      "edition": "1878年版",
+      "range": "1876年9月—1878年6月写成",
+      "sub": "欧根·杜林先生在科学中实行的变革 · 弗·恩格斯 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯全集》第一版第20卷（1971年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [
+        {"path": "raw/MEW20-001.html"}, {"path": "raw/MEW20-002.html"},
+        {"path": "raw/MEW20-003.html"}, {"path": "raw/MEW20-004.html"},
+        {"path": "raw/MEW20-005.html"}
+      ]
+    },
+    {
+      "id": "ziranzhengfa",
+      "author": "恩格斯",
+      "title": "自然辩证法",
+      "dir": "自然辩证法",
+      "landing": "自然辩证法.html",
+      "brand": "自然辩证法",
+      "voltag": "《马克思恩格斯文集》第9卷",
+      "edition": "1873—1886年",
+      "range": "1873—1886年陆续写成 · 手稿",
+      "sub": "弗·恩格斯 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯文集》第9卷，即《马克思恩格斯全集》第二版第26卷（2009年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [
+        {"path": "raw/MEA26-012.html"}, {"path": "raw/MEA26-013.html"},
+        {"path": "raw/MEA26-014.html"}, {"path": "raw/MEA26-015.html"},
+        {"path": "raw/MEA26-016.html"}, {"path": "raw/MEA26-017.html"},
+        {"path": "raw/MEA26-018.html"}
+      ]
+    },
+    {
+      "id": "yingguo",
+      "author": "恩格斯",
+      "title": "英国工人阶级状况",
+      "dir": "英国工人阶级状况",
+      "landing": "英国工人阶级状况.html",
+      "brand": "英国工人阶级状况",
+      "voltag": "《马克思恩格斯全集》第2卷",
+      "edition": "1845年版",
+      "range": "1844年9月—1845年3月写成",
+      "sub": "根据亲身观察和可靠材料 · 弗·恩格斯 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯全集》第一版第2卷（1957年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [
+        {"path": "raw/MEW2-012.html"}, {"path": "raw/MEW2-013.html"},
+        {"path": "raw/MEW2-014.html"}, {"path": "raw/MEW2-015.html"},
+        {"path": "raw/MEW2-016.html"}, {"path": "raw/MEW2-017.html"},
+        {"path": "raw/MEW2-018.html"}, {"path": "raw/MEW2-019.html"},
+        {"path": "raw/MEW2-020.html"}, {"path": "raw/MEW2-021.html"},
+        {"path": "raw/MEW2-022.html"}, {"path": "raw/MEW2-023.html"},
+        {"path": "raw/MEW2-024.html"}, {"path": "raw/MEW2-025.html"}
+      ]
+    },
+    {
+      "id": "diguozhuyi",
+      "author": "列宁",
+      "title": "帝国主义是资本主义的最高阶段",
+      "dir": "帝国主义是资本主义的最高阶段",
+      "landing": "帝国主义是资本主义的最高阶段.html",
+      "brand": "帝国主义是资本主义的最高阶段",
+      "voltag": "《列宁全集》第27卷",
+      "edition": "1917年版",
+      "range": "1916年1—6月写成 · 1917年出版",
+      "sub": "通俗的论述 · 弗·伊·列宁 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《列宁全集》中文第二版第27卷（1990年版，中共中央马克思恩格斯列宁斯大林著作编译局编译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [ {"path": "raw/VIL27-042.html"} ]
+    },
+    {
+      "id": "guojia",
+      "author": "列宁",
+      "title": "国家与革命",
+      "dir": "国家与革命",
+      "landing": "国家与革命.html",
+      "brand": "国家与革命",
+      "voltag": "《列宁全集》第31卷",
+      "edition": "1918年版",
+      "range": "1917年8—9月写成",
+      "sub": "马克思主义关于国家的学说与无产阶级在革命中的任务 · 弗·伊·列宁 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《列宁全集》中文第二版第31卷（1985年版，中共中央马克思恩格斯列宁斯大林著作编译局编译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [
+        {"path": "raw/VIL31-002.html"}, {"path": "raw/VIL31-003.html"},
+        {"path": "raw/VIL31-004.html"}, {"path": "raw/VIL31-005.html"},
+        {"path": "raw/VIL31-006.html"}, {"path": "raw/VIL31-007.html"},
+        {"path": "raw/VIL31-008.html"}, {"path": "raw/VIL31-009.html"}
+      ]
+    },
+    {
+      "id": "tanbianzheng",
+      "author": "列宁",
+      "title": "谈谈辩证法问题",
+      "dir": "谈谈辩证法问题",
+      "landing": "谈谈辩证法问题.html",
+      "brand": "谈谈辩证法问题",
+      "voltag": "《列宁全集》第55卷",
+      "edition": "1915年版",
+      "range": "1915年写成 · 《哲学笔记》",
+      "sub": "弗·伊·列宁 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《列宁全集》中文第二版第55卷《哲学笔记》（1990年版，中共中央马克思恩格斯列宁斯大林著作编译局编译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [ {"path": "raw/VIL55-019.html"} ]
+    },
+    {
+      "id": "zuopai",
+      "author": "列宁",
+      "title": "共产主义运动中的“左派”幼稚病",
+      "dir": "共产主义运动中的“左派”幼稚病",
+      "landing": "共产主义运动中的“左派”幼稚病.html",
+      "brand": "共产主义运动中的“左派”幼稚病",
+      "voltag": "《列宁全集》第39卷",
+      "edition": "1920年版",
+      "range": "1920年4—5月写成",
+      "sub": "弗·伊·列宁 著",
+      "footer": "文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《列宁全集》中文第二版第39卷（1986年版，中共中央马克思恩格斯列宁斯大林著作编译局编译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。",
+      "source_files": [ {"path": "raw/VIL39-002.html"} ]
+    }
+  ]
+}
