@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""ocr_xingxing.py — 对《西行漫记（红星照耀中国）》扫描版 PDF 逐页 OCR。
-输出：每页一个文本文件到 .tools/sources/xingxing/pages/PNNN.txt（PNNN=物理页号）
-用法：python ocr_xingxing.py [起始页] [结束页]
+"""ocr_xixing.py — 对《西行漫记（红星照耀中国）》扫描版 PDF 逐页 OCR。
+输出：每页一个文本文件到 .tools/sources/xixing/pages/PNNN.txt（PNNN=物理页号）
+用法：python ocr_xixing.py [起始页] [结束页]
 """
 import sys, io, os, re, json
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
-PDF = r'C:\导师文集\其他学习\埃德加·斯诺\西行漫记（红星照耀中国）.pdf'
-OUT = r'C:\导师文集\.tools\sources\xingxing\pages'
+PDF = r'C:\导师文集\.tools\sources\xixing\西行漫记（红星照耀中国）.pdf'
+OUT = r'C:\导师文集\.tools\sources\xixing\pages'
 os.makedirs(OUT, exist_ok=True)
 
 from rapidocr_onnxruntime import RapidOCR
