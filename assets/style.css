@@ -264,9 +264,25 @@ body.toc-hidden #main { margin-left: 0; }
   font-size: 34px; font-weight: 800; color: var(--gold); letter-spacing: 2px;
 }
 .mentor-card .name { font-size: 20px; font-weight: 800; letter-spacing: 4px; color: var(--red-dark); }
+.mentor-card .name.fullname { font-size: 15px; letter-spacing: 1px; line-height: 1.45; }
 .mentor-card .works { margin-top: 8px; font-size: 13px; color: var(--ink2); line-height: 1.7; }
 .mentor-card .go { margin-top: 14px; font-size: 13px; color: var(--red); letter-spacing: 2px; font-weight: 700; }
 .mentor-card:hover .go { text-decoration: underline; }
+
+/* 首页分区标题（导师著作 / 其他学习） */
+.zone-title {
+  margin: 52px auto 6px; text-align: center; font-size: 15px;
+  letter-spacing: 12px; color: var(--gold); font-weight: 700;
+}
+.zone-title::before, .zone-title::after { content: "—"; color: var(--line); margin: 0 14px; }
+.zone + .zone { margin-top: 8px; }
+
+/* 长全名 h1（导师页） */
+.hero h1.fullname { font-size: 36px; letter-spacing: 5px; }
+
+/* 首页引文副标题 */
+.hero .sub.quote { letter-spacing: 1px; font-size: 15px; line-height: 2; max-width: 680px; margin-left: auto; margin-right: auto; color: var(--ink2); }
+.hero .sub.quote .attr { color: var(--gold); letter-spacing: 3px; }
 
 /* 选卷卡片 */
 .cards {
