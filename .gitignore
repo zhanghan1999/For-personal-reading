@@ -5,11 +5,15 @@ __pycache__/
 # 本地批注数据（用户私人批注，绝不上传 git）
 批注/
 
+# 私有原件（用户提供的电子书原文件，绝不上传 git）
+私有原件/
+
 # 测试产物（jsdom 依赖与本地测试脚本，不入库）
 .tools/node_modules/
 .tools/package.json
 .tools/package-lock.json
 .tools/test_anno.js
+.tools/test_match.py
 
 # 中间产物/源数据（不入库，留本地）
 .tools/sources/
