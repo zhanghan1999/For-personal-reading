@@ -284,6 +284,69 @@ body.toc-hidden #main { margin-left: 0; }
 .hero .sub.quote { letter-spacing: 1px; font-size: 15px; line-height: 2; max-width: 680px; margin-left: auto; margin-right: auto; color: var(--ink2); }
 .hero .sub.quote .attr { color: var(--gold); letter-spacing: 3px; }
 
+/* ================= 本地批注（下划线 + 语句） ================= */
+u.anno {
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  background: rgba(212, 175, 55, .13);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.anno-menu {
+  position: fixed; z-index: 9999; display: none;
+  min-width: 160px; padding: 4px; box-sizing: border-box;
+  background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .14);
+}
+.anno-menu button {
+  display: block; width: 100%; text-align: left; border: 0; background: none;
+  padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
+  font-family: inherit; color: var(--ink);
+}
+.anno-menu button:hover { background: #f3eddb; }
+.anno-menu .sep { height: 1px; background: var(--line); margin: 4px 6px; }
+.anno-editor {
+  position: fixed; z-index: 9999; display: none; width: 320px; max-width: 92vw;
+  padding: 12px; box-sizing: border-box;
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+}
+.anno-editor textarea {
+  width: 100%; height: 90px; box-sizing: border-box;
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px;
+  font-size: 13px; font-family: inherit; line-height: 1.7; resize: vertical;
+}
+.anno-editor .btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.anno-editor button {
+  border: 1px solid var(--line); background: #fff; border-radius: 6px;
+  padding: 5px 14px; cursor: pointer; font-size: 13px; font-family: inherit;
+}
+.anno-editor .ok { background: var(--red); color: #fff; border-color: var(--red); }
+.anno-tip {
+  position: fixed; z-index: 9998; display: none; pointer-events: none;
+  max-width: 320px; padding: 8px 10px; box-sizing: border-box;
+  background: #fff; border: 1px solid var(--line); border-left: 3px solid var(--gold);
+  border-radius: 6px; font-size: 13px; line-height: 1.7;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+}
+.anno-pill {
+  position: fixed; right: 16px; bottom: 16px; z-index: 9000;
+  background: var(--red); color: #fff; border: 0; border-radius: 999px;
+  padding: 8px 14px; font-size: 12px; cursor: pointer; font-family: inherit;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .2); opacity: .92;
+}
+.anno-pill:hover { opacity: 1; }
+.anno-pill.dirty { background: var(--gold); color: #5a3d00; }
+.anno-toast {
+  position: fixed; left: 50%; bottom: 56px; transform: translateX(-50%);
+  z-index: 10000; display: none; max-width: 80vw; padding: 10px 16px;
+  background: rgba(40, 34, 20, .92); color: #f5ecd7; border-radius: 8px;
+  font-size: 13px; line-height: 1.7; white-space: pre-line; text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+}
+
 /* 选卷卡片 */
 .cards {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
