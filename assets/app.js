@@ -315,7 +315,11 @@
       } else {
         var b = document.createElement('button');
         b.textContent = it[0];
-        b.addEventListener('click', function () { hideMenu(); it[1](); });
+        b.addEventListener('click', function (ev) {
+          if (ev && ev.stopPropagation) ev.stopPropagation();   // 防止冒泡到全局 click 把刚弹出的编辑器关掉
+          hideMenu();
+          it[1]();
+        });
         menu.appendChild(b);
       }
     });
