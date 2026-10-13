@@ -565,6 +565,10 @@
       return;
     }
     hideMenu();
+    // 在正文里右键但没选中文字：给个提示，避免“没反应”
+    if (inMain) {
+      toast('请先在正文中选中一段文字，再右键标注（或用鼠标直接拖选后右键）。');
+    }
   });
   document.addEventListener('click', function (ev) {
     if (!menu.contains(ev.target)) hideMenu();
