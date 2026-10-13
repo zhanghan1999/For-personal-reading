@@ -78,6 +78,12 @@ class Handler(SimpleHTTPRequestHandler):
         except Exception as e:
             self.send_error(500, str(e))
 
+    def end_headers(self):
+        # 页面/脚本禁用启发式缓存：重开必定重新校验，保证补充注释等改动立刻可见
+        if self.command in ('GET', 'HEAD') and self.path.rstrip('/') != '/anno':
+            self.send_header('Cache-Control', 'no-cache')
+        super().end_headers()
+
     def log_message(self, fmt, *args):
         sys.stdout.write('[%s] %s\n' % (self.log_date_time_string(), fmt % args))
         sys.stdout.flush()

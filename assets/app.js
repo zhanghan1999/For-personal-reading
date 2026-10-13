@@ -802,7 +802,8 @@
     fetch('/page-write', {
       method: 'POST',
       headers: {'Content-Type': 'application/json;charset=utf-8'},
-      body: JSON.stringify({path: path, mainHtml: serializeMain()})
+      body: JSON.stringify({path: path, mainHtml: serializeMain()}),
+      keepAlive: true            // 点保存后立刻刷新/跳转也不中断写入
     }).then(function (r) {
       toast(r.ok ? '补充注释已写入文章并保存' : '保存失败（HTTP ' + r.status + '）');
     }).catch(function () {
