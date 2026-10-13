@@ -338,6 +338,40 @@ u.anno {
   box-shadow: 0 4px 12px rgba(0, 0, 0, .2); opacity: .92;
 }
 .anno-pill:hover { opacity: 1; }
+
+/* ---- 补充注释（读者注释，公共入库） ---- */
+sup.dzref {
+  color: var(--red); font-size: 0.72em; cursor: pointer;
+  user-select: none; padding: 0 1px;
+}
+sup.dzref:hover { text-decoration: underline; }
+.dznotes {
+  margin-top: 38px; border-top: 2px solid var(--gold); padding-top: 16px;
+}
+.dznotes-title {
+  color: var(--red); font-size: 15px; letter-spacing: 4px;
+  margin: 0 0 12px; font-weight: 700;
+}
+.dzlist { margin: 0; padding-left: 0; list-style: none; }
+.dznote {
+  font-size: 14px; color: var(--ink2); line-height: 1.95;
+  margin: 7px 0; text-align: justify;
+}
+.dznote .dzlabel { color: var(--red); font-weight: 700; margin-right: 6px; }
+.dznote .dztext { white-space: pre-wrap; }
+.dz-editor { width: 360px; }
+.dz-editor .dz-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px; gap: 8px;
+}
+.dz-editor .dz-title { font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: 1px; }
+.dz-editor .lockbtn {
+  border: 1px solid var(--line); background: #fff; border-radius: 6px;
+  padding: 3px 10px; cursor: pointer; font-size: 12px; font-family: inherit;
+  color: var(--ink); white-space: nowrap;
+}
+.dz-editor .lockbtn:hover { background: #f3eddb; }
+.dz-editor textarea[disabled] { background: #f5f2ea; color: var(--ink2); }
 .anno-pill.dirty { background: var(--gold); color: #5a3d00; }
 .anno-toast {
   position: fixed; left: 50%; bottom: 56px; transform: translateX(-50%);

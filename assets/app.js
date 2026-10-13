@@ -551,13 +551,15 @@
     var selText = inMain ? selTextInMain() : null;
     if (selText) {
       ev.preventDefault();
-      lastSel = {text: selText, offset: selectionOffsetInMain(), rect: null};
+      lastSel = {text: selText, offset: selectionOffsetInMain(), rect: null, range: null};
       try {
+        lastSel.range = window.getSelection().getRangeAt(0);
         var rr = window.getSelection().getRangeAt(0).getBoundingClientRect();
         lastSel.rect = {left: rr.left, bottom: rr.bottom};
       } catch (e) {}
       showMenu(ev.clientX, ev.clientY, [
         ['添加下划线并批注', addAnno],
+        ['添加补充注释', addDzAnno],
         'sep',
         ['复制', function () { try { document.execCommand('copy'); } catch (e) {} }],
         ['全选', function () {
@@ -577,14 +579,223 @@
     }
   });
   document.addEventListener('click', function (ev) {
+    var dzm = ev.target.closest ? ev.target.closest('sup.dzref') : null;
+    if (dzm) { ev.preventDefault(); openDzEditor(dzm); return; }
     if (!menu.contains(ev.target)) hideMenu();
     if (!editor.contains(ev.target)) editor.style.display = 'none';
+    if (!dzEditor.contains(ev.target)) { dzEditor.style.display = 'none'; dzState = null; }
   });
   window.addEventListener('scroll', function () { hideMenu(); hideTip(); }, {passive: true});
   window.addEventListener('resize', function () { hideMenu(); hideTip(); });
   document.addEventListener('keydown', function (ev) {
-    if (ev.key === 'Escape') { hideMenu(); editor.style.display = 'none'; hideTip(); }
+    if (ev.key === 'Escape') {
+      hideMenu();
+      editor.style.display = 'none';
+      dzEditor.style.display = 'none';
+      dzState = null;
+      hideTip();
+    }
   });
+
+  /* ================= 补充注释（读者注释 · 公共入库） =================
+   * 与私人下划线批注不同：补充注释直接写进文章 HTML（上标 + 文末「读者补充注释」区），
+   * 提交 git 公开；编号 [dz.1][dz.2]… 按页重置；锁定条目只读但照常参与重编号。
+   * 增/删/改必须服务器模式（http），file:// 只能看。 */
+  var dzEditor = document.createElement('div');
+  dzEditor.className = 'anno-editor dz-editor';
+  dzEditor.style.display = 'none';
+  document.body.appendChild(dzEditor);
+  var dzState = null;
+
+  function ensureDzSection() {
+    var main = document.getElementById('main');
+    var sec = document.getElementById('dznotes');
+    if (!sec) {
+      sec = document.createElement('section');
+      sec.id = 'dznotes';
+      sec.className = 'dznotes';
+      var h = document.createElement('h3');
+      h.className = 'dznotes-title';
+      h.textContent = '读者补充注释';
+      var ol = document.createElement('ol');
+      ol.className = 'dzlist';
+      sec.appendChild(h);
+      sec.appendChild(ol);
+      main.appendChild(sec);
+    }
+    return sec;
+  }
+  function genDzId() {
+    return 'dz' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+  }
+  function insertMarkerAtRangeEnd(range, marker) {
+    var node = range.endContainer, off = range.endOffset;
+    if (node.nodeType === 3) {
+      if (off < node.nodeValue.length) {
+        var after = node.splitText(off);
+        node.parentNode.insertBefore(marker, after);
+      } else {
+        node.parentNode.insertBefore(marker, node.nextSibling);
+      }
+    } else {
+      node.insertBefore(marker, node.childNodes[off] || null);
+    }
+  }
+  /* 按标记在正文中的顺序统一重编号 + 重排底部列表，保证一一对应 */
+  function renumberDz() {
+    var markers = Array.prototype.slice.call(document.querySelectorAll('sup.dzref'));
+    var sec = document.getElementById('dznotes');
+    var ol = sec ? sec.querySelector('ol.dzlist') : null;
+    markers.forEach(function (m, i) {
+      m.textContent = '[dz.' + (i + 1) + ']';
+      if (ol) {
+        var li = ol.querySelector('.dznote[data-id="' + m.getAttribute('data-id') + '"]');
+        if (li) {
+          var lbl = li.querySelector('.dzlabel');
+          if (lbl) lbl.textContent = '[dz.' + (i + 1) + ']';
+          if (li.parentNode !== ol) ol.appendChild(li);
+        }
+      }
+    });
+  }
+  function dzNoteText(li) {
+    var t = li.querySelector('.dztext');
+    return t ? t.textContent : '';
+  }
+  function addDzAnno() {
+    if (!SERVER_MODE) {
+      toast('补充注释需在服务器模式下添加：双击「启动导师文集.bat」，用 http://127.0.0.1:8790/ 打开本站。');
+      return;
+    }
+    var range = lastSel && lastSel.range;
+    if (!range || range.collapsed) { toast('请先选中正文中的一段文字，再右键添加补充注释。'); return; }
+    var id = genDzId();
+    var sec = ensureDzSection();
+    var ol = sec.querySelector('ol.dzlist');
+    var li = document.createElement('li');
+    li.className = 'dznote';
+    li.setAttribute('data-id', id);
+    li.setAttribute('data-locked', '0');
+    var lbl = document.createElement('span'); lbl.className = 'dzlabel';
+    var txt = document.createElement('span'); txt.className = 'dztext';
+    li.appendChild(lbl); li.appendChild(txt);
+    ol.appendChild(li);
+    var marker = document.createElement('sup');
+    marker.className = 'dzref';
+    marker.setAttribute('data-id', id);
+    marker.title = '读者补充注释';
+    insertMarkerAtRangeEnd(range, marker);
+    renumberDz();
+    openDzEditor(marker, true);
+  }
+  function openDzEditor(marker, isNew) {
+    if (!SERVER_MODE) {
+      toast('补充注释需在服务器模式下编辑：双击「启动导师文集.bat」打开本站。');
+      return;
+    }
+    var id = marker.getAttribute('data-id');
+    var sec = document.getElementById('dznotes');
+    if (!sec) return;
+    var li = sec.querySelector('.dznote[data-id="' + id + '"]');
+    if (!li) return;
+    dzState = {id: id, marker: marker, li: li, isNew: !!isNew};
+    renderDzEditor();
+    var r = marker.getBoundingClientRect();
+    var w = dzEditor.offsetWidth, h = dzEditor.offsetHeight;
+    dzEditor.style.left = Math.min(r.left, window.innerWidth - w - 10) + 'px';
+    dzEditor.style.top = Math.min(r.bottom + 8, window.innerHeight - h - 10) + 'px';
+    dzEditor.style.display = 'block';
+    if (li.getAttribute('data-locked') !== '1') dzEditor.querySelector('textarea').focus();
+  }
+  function renderDzEditor() {
+    var locked = dzState.li.getAttribute('data-locked') === '1';
+    dzEditor.innerHTML = '';
+    var head = document.createElement('div');
+    head.className = 'dz-head';
+    var t = document.createElement('span');
+    t.className = 'dz-title';
+    t.textContent = '读者补充注释' + (locked ? '（已锁定）' : '');
+    var lockBtn = document.createElement('button');
+    lockBtn.className = 'lockbtn';
+    lockBtn.textContent = locked ? '🔓 解锁' : '🔒 锁定';
+    lockBtn.title = locked ? '解锁后才可以编辑或删除' : '锁定后只读，防止误操作（仍会参与自动重编号）';
+    lockBtn.addEventListener('click', function (ev) {
+      if (ev && ev.stopPropagation) ev.stopPropagation();   // 重绘会替换按钮，阻止冒泡以免误判“点在弹窗外”
+      dzState.li.setAttribute('data-locked', locked ? '0' : '1');
+      renderDzEditor();
+      persistDz();
+    });
+    head.appendChild(t);
+    head.appendChild(lockBtn);
+    var ta = document.createElement('textarea');
+    ta.placeholder = '写补充注释…（留空后点保存 = 删除该条，编号自动重排）';
+    ta.value = dzNoteText(dzState.li);
+    ta.disabled = locked;
+    var btns = document.createElement('div');
+    btns.className = 'btns';
+    if (!locked) {
+      var ok = document.createElement('button');
+      ok.className = 'ok';
+      ok.textContent = '保存';
+      ok.addEventListener('click', function () {
+        var v = ta.value;
+        var li = dzState.li, marker = dzState.marker;
+        if (!v.trim()) {
+          if (marker && marker.parentNode) marker.parentNode.removeChild(marker);
+          if (li && li.parentNode) li.parentNode.removeChild(li);
+          var sec2 = document.getElementById('dznotes');
+          if (sec2 && !sec2.querySelector('.dznote')) sec2.parentNode.removeChild(sec2);
+        } else {
+          li.querySelector('.dztext').textContent = v;
+        }
+        renumberDz();
+        dzEditor.style.display = 'none';
+        dzState = null;
+        persistDz();
+      });
+      btns.appendChild(ok);
+    }
+    var cancel = document.createElement('button');
+    cancel.textContent = '取消';
+    cancel.addEventListener('click', function () {
+      if (dzState.isNew && dzState.marker) {           // 新建未保存：回滚空条目
+        var m2 = dzState.marker, li2 = dzState.li;
+        if (m2 && m2.parentNode) m2.parentNode.removeChild(m2);
+        if (li2 && li2.parentNode) li2.parentNode.removeChild(li2);
+        var sec3 = document.getElementById('dznotes');
+        if (sec3 && !sec3.querySelector('.dznote')) sec3.parentNode.removeChild(sec3);
+        renumberDz();
+      }
+      dzEditor.style.display = 'none';
+      dzState = null;
+    });
+    btns.appendChild(cancel);
+    dzEditor.appendChild(head);
+    dzEditor.appendChild(ta);
+    dzEditor.appendChild(btns);
+  }
+  function persistDz() {
+    if (!SERVER_MODE) return;
+    var path = decodeURIComponent(window.location.pathname).replace(/^\/+/, '');
+    fetch('/page-write', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json;charset=utf-8'},
+      body: JSON.stringify({path: path, mainHtml: serializeMain()})
+    }).then(function (r) {
+      toast(r.ok ? '补充注释已写入文章并保存' : '保存失败（HTTP ' + r.status + '）');
+    }).catch(function () {
+      toast('保存失败：无法连接本地服务器');
+    });
+  }
+  /* 序列化 <main> 用于写回文章；剥掉私有下划线（u.anno），避免私人批注泄漏到公共 HTML */
+  function serializeMain() {
+    var clone = document.getElementById('main').cloneNode(true);
+    clone.querySelectorAll('u.anno').forEach(function (u) {
+      var t = document.createTextNode(u.textContent);
+      u.parentNode.replaceChild(t, u);
+    });
+    return clone.innerHTML;
+  }
 
   /* ---- 载入批注数据（文件不存在则忽略） ---- */
   updatePill();

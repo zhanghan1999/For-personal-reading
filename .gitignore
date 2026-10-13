@@ -11,6 +11,8 @@ __pycache__/
 .tools/package-lock.json
 .tools/test_anno.js
 .tools/test_match.py
+.tools/test_dz.js
+.tools/test_pagewrite.py
 
 # 中间产物/源数据（不入库，留本地）
 .tools/sources/
