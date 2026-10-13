@@ -486,7 +486,9 @@
       pill.textContent = '批注 ' + ALL.length + (dirty ? ' · 保存中' : ' · 已自动保存');
       pill.classList.toggle('dirty', dirty);
     } else {
-      pill.textContent = dirty ? '● 批注 ' + ALL.length + ' · 未保存' : '批注 ' + ALL.length;
+      pill.textContent = dirty
+          ? '● 批注 ' + ALL.length + ' · 未保存·点此下载'
+          : '批注 ' + ALL.length + ' · 已保存(文件模式)';
       pill.classList.toggle('dirty', dirty);
     }
   }
