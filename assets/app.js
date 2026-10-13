@@ -539,12 +539,23 @@
     var main = document.getElementById('main');
     if (annoEl) {
       ev.preventDefault();
-      showMenu(ev.clientX, ev.clientY, [
+      // 在已有下划线上右键且有文字选中时，也提供「添加补充注释」（两种注释可叠加同位置）
+      var selTxt2 = main && main.contains(t) ? selTextInMain() : null;
+      var items2 = [
         ['编辑批注', function () { editAnno(annoEl); }],
-        ['删除下划线', function () { delAnno(annoEl); }],
-        'sep',
-        ['保存批注', saveAnno]
-      ]);
+        ['删除下划线', function () { delAnno(annoEl); }]
+      ];
+      if (selTxt2) {
+        lastSel = {text: selTxt2, offset: selectionOffsetInMain(), rect: null, range: null};
+        try {
+          lastSel.range = window.getSelection().getRangeAt(0);
+          var rr2 = window.getSelection().getRangeAt(0).getBoundingClientRect();
+          lastSel.rect = {left: rr2.left, bottom: rr2.bottom};
+        } catch (e) {}
+        items2.push(['添加补充注释', addDzAnno]);
+      }
+      items2.push('sep', ['保存批注', saveAnno]);
+      showMenu(ev.clientX, ev.clientY, items2);
       return;
     }
     var inMain = main && main.contains(t);
@@ -629,6 +640,15 @@
     return 'dz' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
   }
   function insertMarkerAtRangeEnd(range, marker) {
+    // 若选中终点落在私人下划线内，标记插到该下划线元素之后（不包进去，避免保存时被剥掉）
+    var n = range.endContainer;
+    while (n && n.nodeType === 1) {
+      if (n.tagName === 'U' && n.classList && n.classList.contains('anno')) {
+        n.parentNode.insertBefore(marker, n.nextSibling);
+        return;
+      }
+      n = n.parentNode;
+    }
     var node = range.endContainer, off = range.endOffset;
     if (node.nodeType === 3) {
       if (off < node.nodeValue.length) {
@@ -810,12 +830,13 @@
       toast('保存失败：无法连接本地服务器');
     });
   }
-  /* 序列化 <main> 用于写回文章；剥掉私有下划线（u.anno），避免私人批注泄漏到公共 HTML */
+  /* 序列化 <main> 用于写回文章；剥掉私有下划线（u.anno）时保留内部子节点
+   * （万一补充注释标记在下划线内，也随内容移出，不丢失） */
   function serializeMain() {
     var clone = document.getElementById('main').cloneNode(true);
     clone.querySelectorAll('u.anno').forEach(function (u) {
-      var t = document.createTextNode(u.textContent);
-      u.parentNode.replaceChild(t, u);
+      while (u.firstChild) u.parentNode.insertBefore(u.firstChild, u);
+      u.parentNode.removeChild(u);
     });
     return clone.innerHTML;
   }
