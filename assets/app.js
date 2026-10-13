@@ -365,11 +365,14 @@
     updatePill();
   }
 
-  /* ---- 添加批注 ---- */
+  /* ---- 添加批注（用右键时捕获的选中内容；避免点击菜单项后选中被清空） ---- */
+  var lastSel = null;
   function addAnno() {
-    var text = selTextInMain();
-    if (!text) return;
-    var offset = selectionOffsetInMain();
+    var sel = lastSel;
+    var text = (sel && sel.text) ? sel.text : selTextInMain();
+    if (!text) { toast('请先在正文中选中一段文字，再右键标注。'); return; }
+    var offset = (sel && typeof sel.offset === 'number' && sel.offset >= 0)
+        ? sel.offset : selectionOffsetInMain();
     if (offset < 0) {
       var full = textNodes().map(function (n) { return n.nodeValue; }).join('');
       offset = full.indexOf(text);
@@ -384,8 +387,9 @@
       created: new Date().toISOString(),
       updated: new Date().toISOString()
     };
-    var r = window.getSelection().getRangeAt(0).getBoundingClientRect();
-    openEditor(r.left, r.bottom + 8, {mode: 'add', anno: anno, text: text, offset: offset});
+    var x = (sel && sel.rect) ? sel.rect.left + 8 : 120;
+    var y = (sel && sel.rect) ? sel.rect.bottom + 8 : 120;
+    openEditor(x, y, {mode: 'add', anno: anno, text: text, offset: offset});
   }
 
   /* ---- 编辑 / 删除 ---- */
@@ -412,7 +416,7 @@
     updatePill();
   }
 
-  /* ---- 保存：生成批注文件并下载（用户保存到 批注/annotations.js） ---- */
+  /* ---- 保存：生成批注文件并下载（B方案：网页无法直接写本地文件，保存=下载后覆盖） ---- */
   function saveAnno() {
     var js = '/* 本地批注数据 —— 此文件不上传 git\n'
            + ' * 保存位置：' + ANNO_SRC + '\n'
@@ -427,17 +431,21 @@
     setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 300);
     dirty = false;
     updatePill();
-    toast('批注文件已生成，请保存到：\n' + ANNO_SRC);
+    toast('已生成批注文件（共 ' + ALL.length + ' 条）。\n'
+        + '① 浏览器会下载 annotations.js\n'
+        + '② 把它覆盖保存到：' + ANNO_SRC + '\n'
+        + '（网页无法直接写本地文件，所以保存=下载后存放；之后刷新页面批注自动恢复）');
   }
 
   /* ---- 右下角状态按钮 ---- */
   var pill = document.createElement('button');
   pill.className = 'anno-pill';
-  pill.title = '批注只保存在本机（批注/annotations.js），不会上传 git。';
+  pill.title = '批注数据只存本机 批注/annotations.js（不上传 git）。\n'
+             + '点击此按钮生成批注文件：浏览器下载 annotations.js 后，覆盖保存到：\n' + ANNO_SRC;
   pill.addEventListener('click', saveAnno);
   document.body.appendChild(pill);
   function updatePill() {
-    pill.textContent = dirty ? '● 批注 ' + ALL.length + ' · 点击保存' : '批注 ' + ALL.length;
+    pill.textContent = dirty ? '● 批注 ' + ALL.length + ' · 未保存' : '批注 ' + ALL.length;
     pill.classList.toggle('dirty', dirty);
   }
 
@@ -496,9 +504,14 @@
       return;
     }
     var inMain = main && main.contains(t);
-    var hasSel = inMain && selTextInMain();
-    if (hasSel) {
+    var selText = inMain ? selTextInMain() : null;
+    if (selText) {
       ev.preventDefault();
+      lastSel = {text: selText, offset: selectionOffsetInMain(), rect: null};
+      try {
+        var rr = window.getSelection().getRangeAt(0).getBoundingClientRect();
+        lastSel.rect = {left: rr.left, bottom: rr.bottom};
+      } catch (e) {}
       showMenu(ev.clientX, ev.clientY, [
         ['添加下划线并批注', addAnno],
         'sep',
