@@ -721,9 +721,31 @@
     lockBtn.title = locked ? '解锁后才可以编辑或删除' : '锁定后只读，防止误操作（仍会参与自动重编号）';
     lockBtn.addEventListener('click', function (ev) {
       if (ev && ev.stopPropagation) ev.stopPropagation();   // 重绘会替换按钮，阻止冒泡以免误判“点在弹窗外”
-      dzState.li.setAttribute('data-locked', locked ? '0' : '1');
-      renderDzEditor();
-      persistDz();
+      if (locked) {
+        // 当前已锁定 -> 仅解锁（只读期间内容不会变）
+        dzState.li.setAttribute('data-locked', '0');
+        renderDzEditor();
+        persistDz();
+      } else {
+        // 当前未锁定 -> 先保存当前输入，再锁定（空内容等同删除）
+        var v = ta.value;
+        if (!v.trim()) {
+          var m2 = dzState.marker, li2 = dzState.li;
+          if (m2 && m2.parentNode) m2.parentNode.removeChild(m2);
+          if (li2 && li2.parentNode) li2.parentNode.removeChild(li2);
+          var sec = document.getElementById('dznotes');
+          if (sec && !sec.querySelector('.dznote')) sec.parentNode.removeChild(sec);
+          renumberDz();
+          dzEditor.style.display = 'none';
+          dzState = null;
+          persistDz();
+        } else {
+          dzState.li.querySelector('.dztext').textContent = v;
+          dzState.li.setAttribute('data-locked', '1');
+          renderDzEditor();
+          persistDz();
+        }
+      }
     });
     head.appendChild(t);
     head.appendChild(lockBtn);
