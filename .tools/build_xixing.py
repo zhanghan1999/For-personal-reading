@@ -63,6 +63,7 @@ def clean_page(raw):
     for ln in raw.splitlines():
         t = ln.strip()
         if not t:
+            out.append('')            # 保留空行作为“段落分隔”标记
             continue
         if '欢迎关注' in t or '学习理论' in t:
             continue
@@ -173,9 +174,32 @@ def build():
         print('警告：章节数 %d != 目录数 %d，缺失节将不生成页面' % (len(entries), len(ALL_SECTIONS)))
 
     for k, (s, e) in enumerate(zip(secs, entries), 1):
-        paras = []
+        # 合并 OCR 行为完整段落：OCR 无空行，改用“句末标点结尾断段”启发式
+        # （行尾为 。！？…，可带右引号/括号）——对本书正文逐段实测吻合
+        merged = []
+        cur = []
         for ln in s['text']:
-            paras.append({'kind': 'p', 'html': htmllib.escape(ln)})
+            t = ln.strip()
+            if not t:
+                continue
+            cur.append(t)
+            if re.search(r'[。！？…][”"\')\]}』」】]*$', t):
+                merged.append(''.join(cur))
+                cur = []
+        if cur:
+            merged.append(''.join(cur))
+        # 去掉与节标题重复/粘连的标题前缀（OCR 每节行首通常是标题行，且无句号会并进首段）
+        if merged:
+            head = merged[0]
+            if head == s['sec']:
+                merged = merged[1:]
+            elif head.startswith(s['sec']):
+                merged[0] = head[len(s['sec']):]
+            else:
+                pre = head[:len(s['sec'])]
+                if pre and difflib.SequenceMatcher(None, pre, s['sec']).ratio() >= 0.75:
+                    merged[0] = head[len(s['sec']):]
+        paras = [{'kind': 'p', 'html': htmllib.escape(p)} for p in merged]
         prev = entries[k - 2] if k > 1 else None
         nxt = entries[k] if k < len(entries) else None
         result = {
