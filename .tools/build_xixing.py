@@ -2,8 +2,8 @@
 """build_xixing.py — 把 OCR 出的《西行漫记》正文按目录切分成 57 节，生成站点页面。
 先决：.tools/sources/xixing/pages/P*.txt 已由 ocr_xixing.py 生成。
 产物：
-  其他学习/埃德加·斯诺/红星照耀中国/          章节页（NN-节名.html）
-  其他学习/埃德加·斯诺/红星照耀中国.html      书选页（12 篇卡片）
+  其他著作/埃德加·斯诺/红星照耀中国/          章节页（NN-节名.html）
+  其他著作/埃德加·斯诺/红星照耀中国.html      书选页（12 篇卡片）
 """
 import os, re, sys, io, html as htmllib, difflib
 if __name__ == '__main__':
@@ -13,7 +13,7 @@ from mew_convert import render_article
 
 ROOT = r'C:\导师文集'
 PAGES = r'C:\导师文集\.tools\sources\xixing\pages'
-SNOW = os.path.join(ROOT, '其他学习', '埃德加·斯诺')
+SNOW = os.path.join(ROOT, '其他著作', '埃德加·斯诺')
 BOOK_DIR = os.path.join(SNOW, '红星照耀中国')
 
 # 目录（1979 三联董乐山译本，来自 PDF 目录页）

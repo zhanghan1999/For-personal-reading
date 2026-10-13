@@ -99,7 +99,7 @@ def build_landing_page(work, entries, first_href):
 
 def build_work(work):
     """处理一个作品。work 结构见 manifest。"""
-    author_dir = os.path.join(ROOT, work['author'])
+    author_dir = os.path.join(ROOT, '导师著作', work['author'])
     work_dir = os.path.join(author_dir, work['dir'])
     os.makedirs(work_dir, exist_ok=True)
 
@@ -125,8 +125,8 @@ def build_work(work):
     ]}]
 
     vol_href = '../%s' % work['landing']  # landing 已含 .html
-    assets = '../../assets'
-    home = '../../index.html'
+    assets = '../../../assets'
+    home = '../../../index.html'
     brand = work['brand']
     voltag = work.get('voltag', '')
     footer = work.get('footer', '')

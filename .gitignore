@@ -5,9 +5,6 @@ __pycache__/
 # 本地批注数据（用户私人批注，绝不上传 git）
 批注/
 
-# 私有原件（用户提供的电子书原文件，绝不上传 git）
-私有原件/
-
 # 测试产物（jsdom 依赖与本地测试脚本，不入库）
 .tools/node_modules/
 .tools/package.json
@@ -17,9 +14,11 @@ __pycache__/
 
 # 中间产物/源数据（不入库，留本地）
 .tools/sources/
-教员/毛选/来源数据/
-马克思/资本论/旧版合并页/
-马克思/.tools/
 .tools/sources/stalin/_pylib/
 .tools/sources/stalin/_wheels/
 .tools/sources/stalin/sidalin-quanji.pdf
+
+# 导师著作/ 内的旧工作残留（历史遗留，不入库）
+导师著作/教员/毛选/来源数据/
+导师著作/马克思/资本论/旧版合并页/
+导师著作/马克思/.tools/

@@ -13,7 +13,7 @@ from mew_convert import render_article
 
 ROOT = r'C:\导师文集'
 SRC = r'C:\导师文集\.tools\sources\mzdbl'
-MAO = os.path.join(ROOT, '教员')
+MAO = os.path.join(ROOT, '导师著作', '教员')
 OUT = os.path.join(MAO, '军事文集')
 WIN = 30  # 侧栏邻篇窗口
 
@@ -164,7 +164,7 @@ def build():
                 nxt={'href': nxt['fname'], 'title': nxt['title']} if nxt else None,
                 vol_href='../第%d卷.html' % v['no'],
                 footer='文本整理自「毛泽东博览」（www.mzdbl.cn）《毛泽东军事文集》第%d卷（军事科学出版社、中央文献出版社1993年版），仅作学习、研究参考之用；如与纸质版有出入，以纸质版为准。' % v['no'],
-                home_href='../../../index.html', assets='../../../assets',
+                home_href='../../../../index.html', assets='../../../../assets',
             )
             with open(os.path.join(vol_dir, e['fname']), 'w', encoding='utf-8') as f:
                 f.write(page_html)

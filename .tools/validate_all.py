@@ -3,6 +3,7 @@
 import os, re, sys, io, json
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 ROOT = r'C:\导师文集'
+WRAP = '导师著作'
 M = json.load(open(os.path.join(ROOT, '.tools', 'manifest.json'), encoding='utf-8'))['works']
 
 problems = 0
@@ -57,19 +58,19 @@ def check(pages, total):
 
 # 1) 各作品：选卷页 + 章节页
 for w in M:
-    land = os.path.join(ROOT, w['author'], w['landing'])
+    land = os.path.join(ROOT, WRAP, w['author'], w['landing'])
     if not os.path.exists(land):
         print('MISSING landing:', os.path.relpath(land, ROOT)); problems += 1
         continue
-    d = os.path.join(ROOT, w['author'], w['dir'])
+    d = os.path.join(ROOT, WRAP, w['author'], w['dir'])
     files = sorted(f for f in os.listdir(d) if f.endswith('.html'))
     print('== %s / %s : %d 页' % (w['author'], w['title'], len(files)))
-    check([os.path.join(w['author'], w['dir'], f) for f in files], len(files))
+    check([os.path.join(WRAP, w['author'], w['dir'], f) for f in files], len(files))
 
 # 2) 斯大林：两部著作的阅读页与导航页
 st_reading = []
 st_landings = []
-for root2, _, fs in os.walk(os.path.join(ROOT, '斯大林')):
+for root2, _, fs in os.walk(os.path.join(ROOT, WRAP, '斯大林')):
     for f in fs:
         if f.endswith('.html') and 'index.html' not in f:
             fp = os.path.join(root2, f)
@@ -87,7 +88,7 @@ for f in st_landings:
 # 3) 教员专题：仅校验含 window.PAGE 的阅读页；选节/选卷页只查存在
 reading = []
 landings = []
-for root2, _, fs in os.walk(os.path.join(ROOT, '教员', '专题')):
+for root2, _, fs in os.walk(os.path.join(ROOT, WRAP, '教员', '专题')):
     for f in fs:
         if f.endswith('.html'):
             fp = os.path.join(root2, f)
@@ -101,15 +102,20 @@ check(reading, len(reading))
 for f in landings:
     if not os.path.exists(os.path.join(ROOT, f)):
         print('MISSING:', f); problems += 1
-for f in ['教员/专题.html']:
+for f in [os.path.join(WRAP, '教员', '专题.html')]:
     if not os.path.exists(os.path.join(ROOT, f)):
         print('MISSING:', f); problems += 1
 
 # 3) 导师页与首页
-for f in ['index.html', '马克思/index.html', '恩格斯/index.html', '列宁/index.html',
-          '斯大林/index.html', '教员/index.html', '马克思/资本论.html', '教员/毛选.html',
-          '马克思/资本论/1/01-献给我的不能忘记的朋友勇敢的忠实的高尚的无产阶级先锋战士威廉•沃尔弗.html',
-          '教员/毛选/1/01-中国社会各阶级的分析.html']:
+for f in ['index.html', os.path.join(WRAP, '马克思', 'index.html'),
+          os.path.join(WRAP, '恩格斯', 'index.html'),
+          os.path.join(WRAP, '列宁', 'index.html'),
+          os.path.join(WRAP, '斯大林', 'index.html'),
+          os.path.join(WRAP, '教员', 'index.html'),
+          os.path.join(WRAP, '马克思', '资本论.html'),
+          os.path.join(WRAP, '教员', '毛选.html'),
+          os.path.join(WRAP, '马克思', '资本论', '1', '01-献给我的不能忘记的朋友勇敢的忠实的高尚的无产阶级先锋战士威廉•沃尔弗.html'),
+          os.path.join(WRAP, '教员', '毛选', '1', '01-中国社会各阶级的分析.html')]:
     if not os.path.exists(os.path.join(ROOT, f)):
         print('MISSING:', f); problems += 1
 

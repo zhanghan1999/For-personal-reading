@@ -11,7 +11,7 @@ from mew_convert import render_article
 
 ROOT = r'C:\导师文集'
 SRC = os.path.join(ROOT, '.tools', 'sources', 'stalin', 'lnjz-raw.txt')
-AUTHOR = os.path.join(ROOT, '斯大林')
+AUTHOR = os.path.join(ROOT, '导师著作', '斯大林')
 LANDING = '论列宁主义基础.html'
 WORKDIR = os.path.join(AUTHOR, '论列宁主义基础')
 
@@ -206,7 +206,7 @@ def main():
             nxt={'href': nxt['fname'], 'title': nxt['title']} if nxt else None,
             vol_href='../%s' % LANDING,
             footer='文本整理自《新编斯大林全集》第六卷（1924年著作，《斯大林选集》上卷所收《论列宁主义基础》），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。',
-            home_href='../../index.html', assets='../../assets',
+            home_href='../../../index.html', assets='../../../assets',
         )
         with open(os.path.join(WORKDIR, e['fname']), 'w', encoding='utf-8') as f:
             f.write(page_html)

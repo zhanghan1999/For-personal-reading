@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mew_convert import render_article
 
 ROOT = r'C:\导师文集'
-MAO = os.path.join(ROOT, '教员')
+MAO = os.path.join(ROOT, '导师著作', '教员')
 TOPIC = os.path.join(MAO, '专题')
 
 CIRCLED = {
@@ -148,8 +148,8 @@ def build_topic_pages(work):
     voltag = work['voltag']
     footer = work['footer']
     # 多页作品页位于 教员/专题/<作品>/NN.html（4 级），单页作品位于 教员/专题/<作品>.html（3 级）
-    assets = '../../../assets' if len(pages) > 1 else '../../assets'
-    home = '../../../index.html' if len(pages) > 1 else '../../index.html'
+    assets = '../../../../assets' if len(pages) > 1 else '../../assets'
+    home = '../../../../index.html' if len(pages) > 1 else '../../index.html'
 
     entries = []
     for i, pg in enumerate(pages, 1):

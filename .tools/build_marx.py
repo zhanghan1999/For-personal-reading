@@ -4,7 +4,7 @@ import os, sys, io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 ROOT = r'C:\导师文集'
-CAP = os.path.join(ROOT, '马克思', '资本论')
+CAP = os.path.join(ROOT, '导师著作', '马克思', '资本论')
 
 VOL_META = {
     1: {'mew': 23, 'year': '1972', 'sub': '资本的生产过程', 'range': '1867', 'vol_cn': '第一卷'},
@@ -112,7 +112,7 @@ def main():
         })
     page = build_vol_page(vols,
         '文本整理自「中文马克思主义文库」镜像（marx-zh-cn.github.io）《马克思恩格斯全集》第一版第23—25卷（1972年版，中央编译局译，人民出版社出版），仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。')
-    with open(os.path.join(ROOT, '马克思', '资本论.html'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(ROOT, '导师著作', '马克思', '资本论.html'), 'w', encoding='utf-8') as f:
         f.write(page)
     print('wrote 马克思/资本论.html')
 
@@ -123,7 +123,7 @@ def main():
     }]
     mentor = build_mentor_page(works,
         '本页与各著作页面均为独立文件，可整体拷贝到其他电脑离线使用。')
-    with open(os.path.join(ROOT, '马克思', 'index.html'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(ROOT, '导师著作', '马克思', 'index.html'), 'w', encoding='utf-8') as f:
         f.write(mentor)
     print('wrote 马克思/index.html')
 

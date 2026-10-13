@@ -10,7 +10,7 @@ from mew_convert import render_article
 
 ROOT = r'C:\导师文集'
 SRC = os.path.join(ROOT, '.tools', 'sources', 'stalin', 'lun-bianzhengweiwu.tex')
-AUTHOR = os.path.join(ROOT, '斯大林')
+AUTHOR = os.path.join(ROOT, '导师著作', '斯大林')
 LANDING = '论辩证唯物主义和历史唯物主义.html'
 WORKDIR = os.path.join(AUTHOR, '论辩证唯物主义和历史唯物主义')
 
@@ -140,7 +140,7 @@ def main():
         toc_groups=toc_groups, active_href=fname,
         prev=None, nxt=None, vol_href='../%s' % LANDING,
         footer='文本整理自 GitHub 公开仓库 VohsiLiu/History-of-the-Communist-Party-of-the-Soviet-Union-Bolshevik（《联共（布）党史简明教程》TeX 版）第四章第二节，系《斯大林选集》下卷所收《论辩证唯物主义和历史唯物主义》全文，仅作学习、研究参考之用；如与人民出版社纸质版有出入，以纸质版为准。',
-        home_href='../../index.html', assets='../../assets',
+        home_href='../../../index.html', assets='../../../assets',
     )
     os.makedirs(WORKDIR, exist_ok=True)
     with open(os.path.join(WORKDIR, fname), 'w', encoding='utf-8') as f:
