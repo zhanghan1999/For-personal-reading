@@ -113,6 +113,15 @@ def main():
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
+<div id="fileHint" style="display:none;background:#f6ecd2;border-bottom:1px solid var(--line);color:#6b5420;font-size:13px;padding:8px 16px;text-align:center;letter-spacing:1px;">
+  提示：批注自动保存需用 <b>「启动导师文集.bat」</b> 打开本站（当前为直接文件浏览，批注仅支持手动下载保存）。
+</div>
+<script>
+  if (location.protocol === 'file:') {
+    var h = document.getElementById('fileHint');
+    if (h) h.style.display = 'block';
+  }
+</script>
 <div class="hub">
   <header class="hero">
     <div class="kicker">导 师 文 集 · 在 线 文 本 整 理</div>

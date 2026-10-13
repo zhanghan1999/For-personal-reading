@@ -210,6 +210,14 @@
   }
   var THIS_PAGE = pageSiteRel().toLowerCase();
   var ANNO_SRC = siteRootDir() + '/批注/annotations.js';
+  var SERVER_MODE = /^https?:$/.test(window.location.protocol);   // 走本地服务器（http）时自动保存
+
+  function buildAnnoJs() {
+    return '/* 本地批注数据 —— 此文件不上传 git\n'
+         + ' * 保存位置：' + ANNO_SRC + '\n'
+         + ' * 若文件不存在，新建一个文本文件命名为 annotations.js 即可。 */\n'
+         + 'window.__ANNOTATIONS__ = ' + JSON.stringify(ALL, null, 2) + ';\n';
+  }
 
   /* ---- 文本定位工具（基于字符偏移，包裹不改变文本，偏移跨刷新稳定） ---- */
   function textNodes() {
@@ -363,6 +371,7 @@
     dirty = true;
     hideTip();
     updatePill();
+    autoSave();
   }
 
   /* ---- 添加批注（用右键时捕获的选中内容；避免点击菜单项后选中被清空） ---- */
@@ -414,14 +423,16 @@
     });
     dirty = true;
     updatePill();
+    autoSave();
   }
 
-  /* ---- 保存：生成批注文件并下载（B方案：网页无法直接写本地文件，保存=下载后覆盖） ---- */
+  /* ---- 保存：服务器模式 POST 直写本地文件；file:// 模式下载后覆盖 ---- */
   function saveAnno() {
-    var js = '/* 本地批注数据 —— 此文件不上传 git\n'
-           + ' * 保存位置：' + ANNO_SRC + '\n'
-           + ' * 若文件不存在，新建一个文本文件命名为 annotations.js 即可。 */\n'
-           + 'window.__ANNOTATIONS__ = ' + JSON.stringify(ALL, null, 2) + ';\n';
+    var js = buildAnnoJs();
+    if (SERVER_MODE) {
+      saveViaServer(js);
+      return;
+    }
     var blob = new Blob([js], {type: 'application/javascript;charset=utf-8'});
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -437,16 +448,43 @@
         + '（网页无法直接写本地文件，所以保存=下载后存放；之后刷新页面批注自动恢复）');
   }
 
+  /* 服务器模式：POST /anno 由本地服务器写入 批注/annotations.js */
+  function saveViaServer(js) {
+    fetch('/anno', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/javascript;charset=utf-8'},
+      body: js
+    }).then(function (r) {
+      if (r.ok) {
+        dirty = false;
+        updatePill();
+      } else {
+        toast('自动保存失败（HTTP ' + r.status + '），可改用下载保存。');
+      }
+    }).catch(function () {
+      toast('自动保存失败：无法连接本地服务器，可改用下载保存。');
+    });
+  }
+  function autoSave() {
+    if (SERVER_MODE) saveViaServer(buildAnnoJs());
+  }
+
   /* ---- 右下角状态按钮 ---- */
   var pill = document.createElement('button');
   pill.className = 'anno-pill';
-  pill.title = '批注数据只存本机 批注/annotations.js（不上传 git）。\n'
-             + '点击此按钮生成批注文件：浏览器下载 annotations.js 后，覆盖保存到：\n' + ANNO_SRC;
+  pill.title = SERVER_MODE
+      ? '批注已自动保存到本机 批注/annotations.js（不上传 git）。\n点击可立即保存一次。'
+      : '批注数据只存本机 批注/annotations.js（不上传 git）。\n点击此按钮生成批注文件：浏览器下载 annotations.js 后，覆盖保存到：\n' + ANNO_SRC;
   pill.addEventListener('click', saveAnno);
   document.body.appendChild(pill);
   function updatePill() {
-    pill.textContent = dirty ? '● 批注 ' + ALL.length + ' · 未保存' : '批注 ' + ALL.length;
-    pill.classList.toggle('dirty', dirty);
+    if (SERVER_MODE) {
+      pill.textContent = '批注 ' + ALL.length + (dirty ? ' · 保存中' : ' · 已自动保存');
+      pill.classList.toggle('dirty', dirty);
+    } else {
+      pill.textContent = dirty ? '● 批注 ' + ALL.length + ' · 未保存' : '批注 ' + ALL.length;
+      pill.classList.toggle('dirty', dirty);
+    }
   }
 
   /* ---- 悬停提示 ---- */
@@ -541,7 +579,7 @@
   /* ---- 载入批注数据（文件不存在则忽略） ---- */
   updatePill();
   var s = document.createElement('script');
-  s.src = ANNO_SRC;
+  s.src = SERVER_MODE ? ANNO_SRC + '?t=' + Date.now() : ANNO_SRC;   // http 下加时间戳防缓存
   s.onload = function () {
     if (Array.isArray(window.__ANNOTATIONS__)) ALL = window.__ANNOTATIONS__;
     renderAll();
