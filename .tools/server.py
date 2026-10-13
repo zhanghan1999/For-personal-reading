@@ -6,7 +6,7 @@
 用法：双击「启动导师文集.bat」或运行 python server.py
 """
 import os, sys
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 import webbrowser
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # C:\导师文集
@@ -45,7 +45,7 @@ class Handler(SimpleHTTPRequestHandler):
 def main():
     os.makedirs(os.path.dirname(ANNO_FILE), exist_ok=True)
     try:
-        server = HTTPServer(('127.0.0.1', PORT), Handler)
+        server = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
     except OSError as e:
         print('端口 %d 被占用：%s' % (PORT, e))
         input('按回车键退出…')

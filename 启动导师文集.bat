@@ -1,27 +1,26 @@
 @echo off
-chcp 65001 >nul
-title å¯¼å¸ˆæ–‡é›† Â· æœ¬åœ°æœåŠ¡å™¨
+title µ¼Ê¦ÎÄ¼¯ - ±¾µØ·şÎñÆ÷
 cd /d "%~dp0"
 set "SCRIPT=%~dp0.tools\server.py"
 echo.
 echo  ==============================================
-echo    å¯¼å¸ˆæ–‡é›† Â· æœ¬åœ°æœåŠ¡å™¨ï¼ˆæ­£åœ¨å¯åŠ¨â€¦ï¼‰
-echo    å¯åŠ¨æˆåŠŸåä¼šè‡ªåŠ¨æ‰“å¼€é¦–é¡µ
-echo    å…³é—­æœ¬çª—å£å³åœæ­¢æœåŠ¡
+echo    µ¼Ê¦ÎÄ¼¯ - ±¾µØ·şÎñÆ÷£¨ÕıÔÚÆô¶¯...£©
+echo    Æô¶¯³É¹¦ºó»á×Ô¶¯´ò¿ªÊ×Ò³
+echo    ¹Ø±Õ±¾´°¿Ú¼´Í£Ö¹·şÎñ
 echo  ==============================================
 echo.
 where py >nul 2>nul
-if %errorlevel%==0 (
-  py "%SCRIPT%"
-  goto end
-)
+if errorlevel 1 goto trypython
+py "%SCRIPT%"
+goto end
+:trypython
 where python >nul 2>nul
-if %errorlevel%==0 (
-  python "%SCRIPT%"
-  goto end
-)
+if errorlevel 1 goto trybundle
+python "%SCRIPT%"
+goto end
+:trybundle
 "C:\Users\zh\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" "%SCRIPT%"
 :end
 echo.
-echo  æœåŠ¡å™¨å·²é€€å‡ºï¼ˆå¦‚éœ€ä½¿ç”¨æ‰¹æ³¨è‡ªåŠ¨ä¿å­˜ï¼Œè¯·ä¿æŒæ­¤çª—å£å¼€å¯ï¼‰ã€‚
+echo  ·şÎñÆ÷ÒÑÍË³ö£¨ÈçĞèÊ¹ÓÃÅú×¢×Ô¶¯±£´æ£¬Çë±£³Ö´Ë´°¿Ú¿ªÆô£©¡£
 pause
