@@ -284,6 +284,9 @@ body.toc-hidden #main { margin-left: 0; }
 .hero .sub.quote { letter-spacing: 1px; font-size: 15px; line-height: 2; max-width: 680px; margin-left: auto; margin-right: auto; color: var(--ink2); }
 .hero .sub.quote .attr { color: var(--gold); letter-spacing: 3px; }
 
+/* 版本提示（作者页标题下方） */
+.hero .sub.note { letter-spacing: 1px; font-size: 14px; line-height: 1.9; max-width: 740px; margin-left: auto; margin-right: auto; color: #8a6d3b; }
+
 /* ================= 本地批注（下划线 + 语句） ================= */
 u.anno {
   text-decoration: underline;
