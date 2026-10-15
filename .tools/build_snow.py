@@ -159,7 +159,7 @@ def build_placeholder(cfg):
         f.write(landing)
     print('  写入书目占位页: %s.html' % key)
     return {'key': key, 'brand': brand, 'n': 0, 'subtitle': cfg.get('subtitle', ''),
-            'stat': '暂缺全文 · 书目占位'}
+            'stat': cfg.get('stat') or '暂缺全文 · 书目占位', 'no_link': cfg.get('no_link', False)}
 
 
 def build_book(cfg):
@@ -292,7 +292,7 @@ def build_book(cfg):
         f.write(landing)
     print('  写入书选页: %s.html' % key)
     return {'key': key, 'brand': brand, 'n': len(entries), 'subtitle': cfg.get('subtitle', ''),
-            'stat': cfg.get('stat', '')}
+            'stat': cfg.get('stat', ''), 'no_link': cfg.get('no_link', False)}
 
 
 def update_index(books_done):
@@ -309,8 +309,9 @@ def update_index(books_done):
     # 保留未被本次重建覆盖的既有卡片（如《红星照耀中国》）
     rebuilt_keys = {b['key'] for b in books_done}
     kept = []
-    for cm in re.finditer(r'<a class="card" href="([^"]+\.html)"[\s\S]*?</a>', inner):
-        href = cm.group(1)
+    # 保留既有卡片（<a class="card" href=…> 可点击，<div class="card" data-href=…> 不可点击）
+    for cm in re.finditer(r'<(?:a class="card" href="([^"]+\.html)"|div class="card[^"]*" data-href="([^"]+\.html)")[\s\S]*?</(?:a|div)>', inner):
+        href = cm.group(1) or cm.group(2)
         base = href[:-5]
         if base not in rebuilt_keys:
             kept.append(cm.group(0))
@@ -318,7 +319,15 @@ def update_index(books_done):
     for b in books_done:
         key = b['key']
         stat = b.get('stat') or ('%d 节' % b['n'])
-        new_cards += '''<a class="card" href="{key}.html">
+        if b.get('no_link'):
+            new_cards += '''<div class="card disabled" data-href="{key}.html">
+  <div class="vol">{brand}</div>
+  <div class="stat">{stat}</div>
+  <div class="go">查无此书 · 存疑</div>
+</div>
+'''.format(key=key, brand=b['brand'], stat=stat)
+        else:
+            new_cards += '''<a class="card" href="{key}.html">
   <div class="vol">{brand}</div>
   <div class="stat">{stat}</div>
   <div class="go">进入阅读 &#8594;</div>

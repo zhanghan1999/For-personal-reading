@@ -401,6 +401,13 @@ sup.dzref:hover { text-decoration: underline; }
 .card .range { margin-top: 2px; font-size: 13px; color: #9a9080; letter-spacing: 1px; }
 .card .go { margin-top: 18px; font-size: 14px; color: var(--red); letter-spacing: 2px; font-weight: 700; }
 .card:hover .go { text-decoration: underline; }
+.card.disabled {
+  opacity: .55; cursor: not-allowed; filter: grayscale(.35);
+  border-style: dashed;
+}
+.card.disabled:hover { transform: none; box-shadow: none; border-color: var(--line); }
+.card.disabled .go { color: #9a9080; }
+.card.disabled:hover .go { text-decoration: none; }
 .hub footer {
   margin-top: 56px; padding-top: 26px; border-top: 1px solid var(--line);
   text-align: center; color: #9a9080; font-size: 12.5px; line-height: 2.1;

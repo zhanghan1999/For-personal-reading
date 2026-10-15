@@ -1,0 +1,25 @@
+# AGENTS.md — 导师文集（AI 会话速览）
+
+本目录是一个**纯静态**中文经典著作在线阅读站点（马克思/恩格斯/列宁/斯大林/毛泽东 + 埃德加·斯诺），约 2451 个 HTML 页面，无构建框架，全部为独立文件、相对链接、可离线拷贝。
+
+**动手前必读完整说明：[README.md](README.md)**（本文件只是 TL;DR；架构细节、`window.PAGE` 契约、构建/校验脚本、红线都在那里）。
+
+## TL;DR
+
+- **页面四级结构**：`index.html` 首页 → `导师著作/<人>/index.html` 人物页 → `导师著作/<人>/<作品>.html` 选卷页 → `导师著作/<人>/<作品>/NN-<篇名>.html` 阅读页。其他著作同理（`其他著作/埃德加·斯诺/`）。教员（毛）含 `毛选/1..5/`、`军事文集/第X卷/`、`专题/` 子结构。
+- **公共前端**：`assets/style.css`（样式）、`assets/app.js`（全部交互逻辑，IIFE 无依赖）。
+- **数据契约**：每个阅读页内嵌 `window.PAGE = {...}`（brand/voltag/tocGroups/activeHref/volHref…），`app.js` 据此生成目录、顶栏、高亮、上下篇。改页面先改 PAGE。
+- **相对路径深度**：人物页/选卷页用 `../../assets/`；阅读页用 `../../../assets/`（毛选/军事文集/专题/资本论的章节页同属阅读页深度）。
+- **本地服务器**：`启动导师文集.bat` → `.tools/server.ps1`（纯 PowerShell，端口 8790，免装 Python）。接口：静态托管（no-cache）、`POST /anno` 存私人批注、`POST /page-write` 写回补充注释（含路径安全校验）。`server.py` 为 Python 等价备用。
+- **两类注释（务必区分）**：
+  - 私人批注（下划线）→ 数据在 `批注/annotations.js`，**gitignore，永不入库**。
+  - 读者补充注释 `[dz.N]` → 写回文章 HTML，**公共入库**；写回时自动剥掉私人下划线。
+- **构建/校验**（在 `.tools/`，源素材在 `.tools/sources/` 且 gitignore）：核心转换器 `mew_convert.py`（`render_article` 生成阅读页）；各栏目有 `build_*.py`；导航重建 `build_volpages.py`/`build_indexes.py`；改动后必跑 `check_all_links.py` / `validate_all.py` 校验零坏链；批注相关用 `node .tools/test_anno.js` / `test_dz.js`（jsdom）回归。
+
+## 硬性规则
+
+1. 不引入框架/打包器/后端；保持纯静态与相对链接。
+2. 私人批注数据（`批注/`）绝不入库；`sources/`、`node_modules/`、`来源数据/` 也不入库。
+3. 页面 footer 的来源/版本/版权说明保留原样。
+4. `启动导师文集.bat` 必须 GBK+CRLF 编码（勿改成 UTF-8）。
+5. 改完导航/新增内容后跑链接校验，保持全站零坏链。
