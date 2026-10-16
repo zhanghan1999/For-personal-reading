@@ -14,6 +14,8 @@ __pycache__/
 .tools/test_dz.js
 .tools/test_pagewrite.py
 .tools/test_pagewrite_ps.py
+.tools/test_quote.js
+.tools/check_out.txt
 
 # 中间产物/源数据（不入库，留本地）
 .tools/sources/
