@@ -57,10 +57,23 @@ def mentor_page(name, cards, footer='本页与各著作页面均为独立文件�
                              namecls=namecls, cards='\n'.join(cards), footer=footer)
 
 
-def build_author(full_name, author_key, extra):
-    cards = []
+def view_count(work):
+    """视图页（全集尚无独立正文目录）的篇数：数页面里的卡片。"""
+    p = os.path.join(ROOT, WRAP, work['author'], work['landing'])
+    if not os.path.exists(p):
+        return 0
+    html = open(p, encoding='utf-8').read()
+    return html.count('class="card"')
+
+
+def build_author(full_name, author_key, extra, first=None):
+    cards = list(first or [])
     for w in M:
         if w['author'] != author_key:
+            continue
+        if w.get('view'):
+            cards.append(CARD.format(href=w['landing'], title=w['title'],
+                                     stat='%d 篇（全集视图）' % view_count(w)))
             continue
         n = count_pages(w)
         cards.append(CARD.format(href=w['landing'], title=w['title'],
@@ -70,25 +83,43 @@ def build_author(full_name, author_key, extra):
 
 
 def main():
-    # 马克思：资本论 + 新增
-    cards_marx = [CARD.format(href='资本论.html', title='资本论', stat='全三卷 · 109 篇文章')]
-    page = build_author('卡尔·马克思', '马克思', cards_marx)
+    # 全集卡片（马克思、恩格斯共用同一份正文）
+    SET_CARD = CARD.format(href='马克思恩格斯全集.html', title='马克思恩格斯全集',
+                           stat='全 50 卷 · 6883 篇 · 1833—1895')
+    SET_CARD_ENGELS = CARD.format(href='../马克思/马克思恩格斯全集.html',
+                                  title='马克思恩格斯全集',
+                                  stat='全 50 卷 · 6883 篇 · 1833—1895')
+
+    # 马克思：全集 + 资本论（视图）+ manifest 里的视图页
+    cards_marx = [CARD.format(href='资本论.html', title='资本论',
+                              stat='全三卷 · 109 篇（全集第23—25卷）')]
+    page = build_author('卡尔·马克思', '马克思', cards_marx, first=[SET_CARD])
     open(os.path.join(ROOT, WRAP, '马克思', 'index.html'), 'w', encoding='utf-8').write(page)
 
     # 恩格斯
-    page = build_author('弗里德里希·恩格斯', '恩格斯', [])
+    page = build_author('弗里德里希·恩格斯', '恩格斯', [], first=[SET_CARD_ENGELS])
     open(os.path.join(ROOT, WRAP, '恩格斯', 'index.html'), 'w', encoding='utf-8').write(page)
 
     # 列宁
     page = build_author('弗拉基米尔·伊里奇·列宁', '列宁', [])
     open(os.path.join(ROOT, WRAP, '列宁', 'index.html'), 'w', encoding='utf-8').write(page)
 
-    # 斯大林：两篇均已入库
+    # 斯大林：全集 + 两篇单行本
+    st_dir = os.path.join(ROOT, WRAP, '斯大林', '斯大林全集')
+    st_vols, st_pages = [], 0
+    if os.path.isdir(st_dir):
+        for d in os.listdir(st_dir):
+            sub = os.path.join(st_dir, d)
+            if os.path.isdir(sub):
+                st_vols.append(d)
+                st_pages += len([f for f in os.listdir(sub) if f.endswith('.html')])
     stalin_cards = [
+        CARD.format(href='斯大林全集.html', title='斯大林全集',
+                    stat='%d 卷 · %d 篇 · 1901—1953' % (len(st_vols), st_pages)),
         CARD.format(href='论列宁主义基础.html', title='论列宁主义基础',
-                    stat='引言 + 九节 · 在斯维尔德洛夫大学的讲演（1924）'),
+                    stat='1 篇（全集视图）· 第6卷 · 在斯维尔德洛夫大学的讲演（1924）'),
         CARD.format(href='论辩证唯物主义和历史唯物主义.html', title='论辩证唯物主义和历史唯物主义',
-                    stat='全文 1 篇 · 《联共（布）党史简明教程》第四章第二节'),
+                    stat='1 篇（全集视图）· 第14卷 · 《联共（布）党史简明教程》第四章第二节'),
     ]
     stalin_html = mentor_page('约瑟夫·维萨里奥诺维奇·斯大林', stalin_cards)
     open(os.path.join(ROOT, WRAP, '斯大林', 'index.html'), 'w', encoding='utf-8').write(stalin_html)
@@ -137,14 +168,14 @@ def main():
 <a class="mentor-card" href="导师著作/马克思/index.html">
   <div class="avatar"><span class="ph">马</span></div>
   <div class="name fullname">卡尔·马克思</div>
-  <div class="works">《资本论》全三卷 · 共产党宣言 · 政治经济学批判</div>
+  <div class="works">《马克思恩格斯全集》五十卷 · 《资本论》 · 共产党宣言</div>
   <div class="go">进入著作 &#8594;</div>
 </a>
 
 <a class="mentor-card" href="导师著作/恩格斯/index.html">
   <div class="avatar"><span class="ph">恩</span></div>
   <div class="name fullname">弗里德里希·恩格斯</div>
-  <div class="works">反杜林论 · 自然辩证法 · 社会主义从空想到科学的发展 等</div>
+  <div class="works">《马克思恩格斯全集》 · 反杜林论 · 自然辩证法 · 家庭、私有制和国家的起源 等</div>
   <div class="go">进入著作 &#8594;</div>
 </a>
 
@@ -158,7 +189,7 @@ def main():
 <a class="mentor-card" href="导师著作/斯大林/index.html">
   <div class="avatar"><span class="ph">斯</span></div>
   <div class="name fullname">约瑟夫·维萨里奥诺维奇·斯大林</div>
-  <div class="works">论列宁主义基础 · 论辩证唯物主义和历史唯物主义</div>
+  <div class="works">《斯大林全集》二十卷 · 论列宁主义基础 · 论辩证唯物主义和历史唯物主义</div>
   <div class="go">进入著作 &#8594;</div>
 </a>
 

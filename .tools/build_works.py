@@ -181,6 +181,10 @@ def main():
     for work in manifest['works']:
         if want and work['id'] not in want:
             continue
+        if work.get('view'):
+            print('== %s / %s : 视图页（正文在《%s》），跳过' % (
+                work['author'], work['title'], work.get('view_of', '全集')))
+            continue
         print('== %s / %s' % (work['author'], work['title']))
         n = build_work(work)
         total += n

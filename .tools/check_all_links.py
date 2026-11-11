@@ -6,8 +6,11 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='repla
 ROOT = r'C:\导师文集'
 
 html_files = []
+SKIP_TOOLS = '--with-tools' not in sys.argv  # 默认只查站点；.tools/sources 是原始素材，链接本就不指向站内
 for root, _, fs in os.walk(ROOT):
     if '来源数据' in root or '.git' in root or '_pylib' in root or '_wheels' in root:
+        continue
+    if SKIP_TOOLS and os.path.relpath(root, ROOT).startswith('.tools'):
         continue
     for f in fs:
         if f.endswith('.html'):
@@ -15,6 +18,7 @@ for root, _, fs in os.walk(ROOT):
 print('检查页面数:', len(html_files))
 
 HREF_RE = re.compile(r'href="([^"]+)"')
+SRC_RE = re.compile(r'<script[^>]+src="([^"]+)"')
 bad = []
 total = 0
 for fp in html_files:
@@ -25,6 +29,8 @@ for fp in html_files:
     d = os.path.dirname(fp)
     hrefs = set()
     for m in HREF_RE.finditer(html):
+        hrefs.add(m.group(1))
+    for m in SRC_RE.finditer(html):   # 脚本引用也要查（目录.js 漏拷会静默丢目录）
         hrefs.add(m.group(1))
     for h in hrefs:
         if not h or h.startswith(('#', 'http://', 'https://', 'mailto:', 'tel:', 'javascript:')):
