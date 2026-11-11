@@ -86,6 +86,31 @@
     if (saved === '1' && window.innerWidth > 900) setTocHidden(true);
   }
 
+  // ---------- 目录定位：把「当前篇」放到侧栏中间 ----------
+  // 每次翻篇/点目录都是整页刷新（纯静态站点），目录滚动位置不会自己保留；
+  // 这里在渲染完成后把高亮项滚到可视区中部，避免每次都从第一篇开始翻找。
+  // 目录未超出可视高度、或当前篇已在前几篇时（目标位置为负）保持不动，不会白跳一下。
+  function centerActiveToc() {
+    if (!toc || !tocList) return;
+    var active = tocList.querySelector('a.active');
+    if (!active) return;
+    var max = toc.scrollHeight - toc.clientHeight;
+    if (max <= 0) return;
+    var r = active.getBoundingClientRect();
+    var b = toc.getBoundingClientRect();
+    var target = toc.scrollTop + (r.top - b.top) - (toc.clientHeight / 2 - r.height / 2);
+    toc.scrollTop = Math.max(0, Math.min(max, target));
+  }
+  function centerActiveTocSoon() {
+    if (window.requestAnimationFrame) window.requestAnimationFrame(centerActiveToc);
+    else setTimeout(centerActiveToc, 0);
+  }
+  centerActiveTocSoon();   // 等目录下方的「阅读进度」条插入后再定位，避免相差一条高度
+  // 从 bfcache 返回（后退/前进）时浏览器会恢复页面状态，再校正一次
+  window.addEventListener('pageshow', function (ev) {
+    if (ev.persisted) centerActiveTocSoon();
+  });
+
   // ---------- 进度条 / 返回顶部 / 打印 ----------
   var progress = document.getElementById('progress');
   var backtop = document.getElementById('backtop');
@@ -139,9 +164,12 @@
   fntip.className = 'fntip';
   document.body.appendChild(fntip);
   function showFntip(link) {
-    var noteEl = document.getElementById(link.getAttribute('href').slice(1));
-    if (!noteEl) return;
-    fntip.textContent = noteEl.textContent.replace(/^[\[\]()a-zA-Z0-9]+\s*/, '');
+    var href = link.getAttribute('href') || '';
+    var noteEl = href.charAt(0) === '#' ? document.getElementById(href.slice(1)) : null;
+    // 少数页面源文件里注释条目本身就缺（扫描件未收录），给一句明确提示，避免“点了没反应”
+    fntip.textContent = noteEl
+        ? noteEl.textContent.replace(/^[\[\]()a-zA-Z0-9]+\s*/, '')
+        : '本页未收录这条注释（原始文本此处缺注）。';
     fntip.style.display = 'block';
     var rect = link.getBoundingClientRect();
     var w = Math.min(340, window.innerWidth - 24);

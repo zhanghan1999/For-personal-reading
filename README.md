@@ -136,8 +136,9 @@ C:\导师文集\
 单文件、IIFE、无依赖，`window.PAGE` 驱动，按 DOM 是否存在做特性探测：
 
 - 目录渲染（`tocGroups`/`toc`）、顶栏填充、目录折叠（localStorage `dsw-toc-hidden`）。
+- **目录自动定位**：渲染完成后把当前篇（`a.active`）滚到侧栏可视区中部，翻篇/点目录后不用再从第一篇往下翻；目录未溢出、或当前篇本来就靠前时不滚动（不白跳）。移动端抽屉打开后同样生效。
 - 滚动进度条、返回顶部、打印；移动端目录抽屉；篇名搜索过滤。
-- 脚注悬浮提示（正文 `sup.fnref` → 文末 `p.note`）。
+- 脚注悬浮提示（正文 `sup.fnref` → 文末 `p.note`）。**注释条目本身缺失时**（有些页面的源文本没收录该条注）显示「本页未收录这条注释」，不再是点了没反应。
 - **私人批注**（下划线 + 语句，右键菜单）：数据只存本机 `批注/annotations.js`（**gitignore**）。
   - 服务器模式（http）经 `POST /anno` 自动保存；`file://` 模式改为下载 annotations.js 手动覆盖。
   - 定位基于“主文本字符偏移”，包裹 `<u>` 不改变文本，刷新稳定。
@@ -184,7 +185,9 @@ C:\导师文集\
 | `build_volpages.py` / `build_indexes.py` | 重建选卷页 / 人物页 / 首页索引。 |
 | `inject_quote_js.py` / `inject_read_js.py` | 给所有非正文页挂 `assets/quote.js`（轮换引言）/ `assets/read.js`（阅读进度展示）。幂等；**重建导航后需重跑**。 |
 | `check_links.py` `check_all_links.py` `validate_all.py` `validate_site.py` 等 | 全站链接与结构校验（改完必跑）。 |
-| `test_anno.js` / `test_dz.js` / `test_read.js` | jsdom 端到端测试（私人批注 / 补充注释 / 阅读进度）。 |
+| `check_fntip_all.py` | **脚注一致性体检**：逐页比对 `sup.fnref` 锚点与注释 id，报告坏锚点、注释条目缺 id、id 重复（按页面聚合；`--verbose` 列明细）。 |
+| `fix_note_ids.py` | **补齐脚注目标 id**（幂等）：注释条目漏了 id 就会「点了没反应」，脚本从该页 fnref 锚点反推 id 前缀、按条目自带的编号补 id 并统一成 `[N]&ensp;正文`；前缀不唯一或会撞 id 时整页跳过并报告。`--check` 只报告。 |
+| `test_anno.js` / `test_dz.js` / `test_read.js` / `test_toc.js` | jsdom 端到端测试（私人批注 / 补充注释 / 阅读进度 / 脚注点开 + 目录定位）。 |
 
 ## 8. 约定与红线（务必遵守）
 
@@ -214,6 +217,7 @@ C:\导师文集\
 - **全集增补/重跑**：马恩全集 → `python .tools/build_mew_full.py`（可选卷号调试，末尾自动瘦身）→ `python .tools/build_view_works.py`；斯大林全集 → 改 `.tools/sources/stalin/_toc.json` 后跑 `python .tools/build_stalin_quanji.py`（同样自动瘦身）。
 - **瘦身/体检**：`python .tools/slim_toc.py --check` 看还有多少内嵌目录；`python .tools/slim_toc.py` 执行外置。若 `slim_toc` 中途失败留下坏页，跑 `python .tools/fix_page_scripts.py` 修 `</script>` 并规范 `目录.js` 命名。
 - **重命名/删除某篇后**：`tocGroups`/`VOL_TOC`（即 `目录.js`）与“上一篇/下一篇”都不会自动改，必须整卷重建（全集群书一律重建，不要手改单页）。
+- **脚注点不开**：跑 `python .tools/check_fntip_all.py` 定位（坏锚点 / 注释条目缺 id），再用 `python .tools/fix_note_ids.py` 自动补 id（只补带编号的条目，幂等；先用 `--check` 看会改哪些）。注释条目本身在源文本里就缺的（如部分毛选旧卷、马恩全集个别页），页面会显示「本页未收录这条注释」，补 id 救不了——要补内容得回到源素材重跑对应 build 脚本。
 - **只改样式/脚本**：改 `assets/style.css` / `assets/app.js` / `assets/read.js`，全站即时生效（无缓存构建）。
 - **新增/重建导航页后**：跑 `python .tools/inject_read_js.py`（阅读进度展示）与 `python .tools/inject_quote_js.py`（轮换引言），两者幂等。
 - **验证全站**：`python .tools/check_all_links.py`、`python .tools/validate_all.py`。
