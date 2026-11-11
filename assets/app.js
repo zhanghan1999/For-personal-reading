@@ -23,7 +23,11 @@
   // ---------- 目录生成 ----------
   var tocList = document.getElementById('toclist');
   if (tocList) {
+    // 全集类页面：目录由同目录的 目录.js 提供（window.VOL_TOC），页面内不再内嵌，避免每页重复
     var groups = PAGE.tocGroups || [];
+    if (!groups.length && window.VOL_TOC && window.VOL_TOC.length) {
+      groups = window.VOL_TOC;
+    }
     if (!groups.length && PAGE.toc && PAGE.toc.length) {
       groups = [{ label: null, items: PAGE.toc }];
     }
@@ -174,6 +178,187 @@
   window.addEventListener('scroll', function () { if (fntip._ref) hideFntip(); }, { passive: true });
   window.addEventListener('resize', function () { if (fntip._ref) hideFntip(); });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') hideFntip(); });
+})();
+
+/* ============================================================
+   阅读进度（本地缓存）—— 数据只存本机浏览器 localStorage，不进 git
+   存储：dsw-read-v1   { "站点相对路径(小写)": 已读时间戳 }
+         dsw-read-last { page, title, brand, t } 供首页「继续阅读」
+   规则：① 点「下一篇」自动把当前章节记为已读（默认规则）
+         ② 顶栏「标记已读」按钮可手动标记 / 取消（末章等场景）
+         ③ 侧栏目录给已读章节打 ✓，并显示整卷进度
+   file:// 双击与 http 服务器模式均可用，两种模式键名一致。
+   首页 / 选卷页的展示由 assets/read.js 完成，共用同一份存储。
+   ============================================================ */
+(function () {
+  if (!window.PAGE || !document.getElementById('main')) return;   // 仅阅读页生效
+
+  var KEY = 'dsw-read-v1';
+  var LAST_KEY = 'dsw-read-last';
+
+  /* ---- 站点根与页面标识：与批注相同的推导方式，file:// 亦可用 ----
+   * 注意：必须在脚本执行期立即缓存 currentScript（事件回调里它是 null） */
+  var ROOT_DIR = (function () {
+    var cur = document.currentScript;
+    if (!cur || !cur.src) return '';
+    var p = cur.src.split('/'); p.pop(); p.pop();   // 去掉 app.js 与 assets
+    return p.join('/');
+  })();
+  var ROOT_PATH = ROOT_DIR.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '');
+  function rootRel(pathname) {
+    var path = decodeURIComponent(pathname || '').replace(/\\/g, '/');
+    if (ROOT_PATH) {
+      if (path.indexOf('/' + ROOT_PATH + '/') === 0) return path.slice(ROOT_PATH.length + 2);
+      if (path.indexOf(ROOT_PATH + '/') === 0) return path.slice(ROOT_PATH.length + 1);
+    }
+    return path.replace(/^\/+/, '');
+  }
+  function keyForHref(href) {
+    if (!href || /^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(href) || href.charAt(0) === '#') return '';
+    try {
+      var u = new URL(href, window.location.href);
+      if (u.protocol !== window.location.protocol) return '';
+      if (/^https?:$/.test(u.protocol) && u.host !== window.location.host) return '';
+      return rootRel(u.pathname).toLowerCase();
+    } catch (e) { return ''; }
+  }
+
+  var THIS_PAGE = rootRel(window.location.pathname);
+  var THIS_KEY = THIS_PAGE.toLowerCase();
+
+  /* ---- 读写（localStorage 不可用时退化为会话内内存态） ---- */
+  function loadMap() {
+    try {
+      var m = JSON.parse(localStorage.getItem(KEY) || '{}');
+      if (m && typeof m === 'object' && !Array.isArray(m)) return m;
+    } catch (e) {}
+    return {};
+  }
+  var MAP = loadMap();
+  function saveMap() {
+    try { localStorage.setItem(KEY, JSON.stringify(MAP)); } catch (e) {}
+  }
+  function currentTitle() {
+    var groups = PAGE.tocGroups || window.VOL_TOC || (PAGE.toc ? [{ items: PAGE.toc }] : []);
+    for (var i = 0; i < groups.length; i++) {
+      var items = groups[i].items || [];
+      for (var j = 0; j < items.length; j++) {
+        if (items[j].href === PAGE.activeHref) return items[j].title;
+      }
+    }
+    return (document.title || '').split(' · ')[0] || THIS_PAGE;
+  }
+  function saveLast() {
+    try {
+      localStorage.setItem(LAST_KEY, JSON.stringify({
+        page: THIS_PAGE, title: currentTitle(), brand: PAGE.brand || '', t: Date.now()
+      }));
+    } catch (e) {}
+  }
+  function isRead() { return !!MAP[THIS_KEY]; }
+  function markRead() {
+    MAP[THIS_KEY] = Date.now();
+    saveMap(); saveLast(); paint();
+  }
+  function unmarkRead() {
+    delete MAP[THIS_KEY];
+    saveMap(); paint();
+  }
+
+  /* ---- 顶栏「标记已读」按钮 ---- */
+  var topbar = document.getElementById('topbar');
+  var btn = null;
+  if (topbar) {
+    btn = document.createElement('button');
+    btn.id = 'readBtn';
+    btn.type = 'button';
+    var printBtn = document.getElementById('printBtn');
+    if (printBtn) topbar.insertBefore(btn, printBtn);
+    else topbar.appendChild(btn);
+    btn.addEventListener('click', function () {
+      if (isRead()) { unmarkRead(); toast('已取消本篇的已读标记。'); }
+      else { markRead(); toast('已记下阅读进度：本篇标记为已读（只存本机浏览器）。'); }
+    });
+  }
+
+  /* ---- 侧栏目录：✓ 标记 + 整卷进度 ---- */
+  var tocList = document.getElementById('toclist');
+  var sumText = null, sumBar = null;
+  if (tocList && tocList.parentNode) {
+    var summary = document.createElement('div');
+    summary.className = 'read-progress';
+    summary.innerHTML = '<div class="rp-text"><span>阅读进度</span><b></b></div>'
+                      + '<div class="rp-bar"><i></i></div>';
+    sumText = summary.querySelector('.rp-text b');
+    sumBar = summary.querySelector('.rp-bar i');
+    tocList.parentNode.insertBefore(summary, tocList);
+  }
+  function paint() {
+    if (btn) {
+      var read = isRead();
+      btn.textContent = read ? '✓ 已读' : '标记已读';
+      btn.classList.toggle('on', read);
+      btn.title = read
+          ? '本篇已记为已读（记录只存本机浏览器，不上传）。\n点击可取消标记。'
+          : '把本篇记为已读（记录只存本机浏览器，不上传）。\n默认规则：点「下一篇」时自动把本篇记为已读。';
+    }
+    if (!tocList) return;
+    var total = 0, done = 0;
+    tocList.querySelectorAll('a').forEach(function (a) {
+      total++;
+      var read = !!MAP[keyForHref(a.getAttribute('href'))];
+      if (read) done++;
+      a.classList.toggle('read', read);
+      var mark = a.querySelector('.readmark');
+      if (read && !mark) {
+        mark = document.createElement('span');
+        mark.className = 'readmark';
+        mark.textContent = '✓';
+        a.appendChild(mark);
+      } else if (!read && mark) {
+        mark.parentNode.removeChild(mark);
+      }
+    });
+    if (sumText) {
+      sumText.textContent = '已读 ' + done + ' / ' + total + ' 篇' + (total > 0 && done === total ? ' · 读毕' : '');
+      sumBar.style.width = (total ? Math.round(done * 100 / total) : 0) + '%';
+    }
+  }
+
+  /* ---- 默认规则：点「下一篇」= 当前章节已读 ---- */
+  var nextLink = null;
+  document.querySelectorAll('.chapnav a').forEach(function (a) {
+    var lbl = a.querySelector('.lbl');
+    if (lbl && lbl.textContent.indexOf('下一篇') !== -1) nextLink = a;
+  });
+  if (nextLink) {
+    nextLink.addEventListener('click', function () {
+      // localStorage 同步写入，先于跳转完成；Ctrl+点击开新标签时也照常记录并刷新本页
+      markRead();
+    });
+  }
+
+  /* ---- 多标签页同步 ---- */
+  window.addEventListener('storage', function (ev) {
+    if (ev.key === KEY || ev.key === LAST_KEY || ev.key === null) { MAP = loadMap(); paint(); }
+  });
+
+  /* ---- 轻提示 ---- */
+  var toastEl = null;
+  function toast(msg) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'read-toast';
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;
+    toastEl.style.display = 'block';
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(function () { toastEl.style.display = 'none'; }, 3500);
+  }
+
+  saveLast();   // 记录「上次读到哪」供首页继续阅读（打开即记，不算已读）
+  paint();
 })();
 
 /* ============================================================

@@ -451,3 +451,106 @@ sup.dzref:hover { text-decoration: underline; }
   body { background: #fff; }
   article.chapter { page-break-before: always; padding: 0; border: none !important; }
 }
+
+/* ================= 阅读进度（本地缓存，不进 git） ================= */
+/* 顶栏「标记已读」按钮（基础样式沿用 #topbar button） */
+#topbar #readBtn.on { color: var(--red); border-color: var(--red); background: #f7efe1; font-weight: 700; }
+
+/* 侧栏目录：整卷进度 */
+#toc .read-progress {
+  margin: 0 0 12px; padding: 9px 11px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 7px;
+}
+#toc .read-progress .rp-text {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 12px; color: var(--ink2); letter-spacing: 1px;
+}
+#toc .read-progress .rp-text b { color: var(--red); font-size: 12px; }
+#toc .read-progress .rp-bar {
+  height: 4px; margin-top: 7px; background: var(--paper2);
+  border-radius: 2px; overflow: hidden;
+}
+#toc .read-progress .rp-bar i {
+  display: block; height: 100%; width: 0; border-radius: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--red));
+  transition: width .3s ease;
+}
+
+/* 侧栏目录：已读章节（淡墨色 + 金色 ✓；当前篇保持朱红高亮） */
+#toc li a .readmark { margin-left: auto; flex: 0 0 auto; color: var(--gold); font-size: 11px; font-weight: 700; }
+#toc li a.read { color: #8f8672; }
+#toc li a.read .num { color: #b7a888; }
+#toc li a.read:hover { color: var(--ink); background: #f2ecdd; }
+#toc li a.read.active { color: var(--red); background: #f7efe1; }
+#toc li a.read.active .num { color: var(--red); }
+#toc li a.read.active .readmark { color: var(--red); }
+
+/* 轻提示（与批注 toast 同款，位置略高避免重叠） */
+.read-toast {
+  position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%);
+  z-index: 10000; display: none; max-width: 80vw; padding: 10px 16px;
+  background: rgba(40, 34, 20, .92); color: #f5ecd7; border-radius: 8px;
+  font-size: 13px; line-height: 1.7; white-space: pre-line; text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+}
+
+/* 选卷页卡片：已读印章 */
+.card { position: relative; }
+.card.read { background: #fbf6e9; border-color: #e0d2b0; }
+.card.read::after {
+  content: '✓ 已读'; position: absolute; top: 10px; right: 12px;
+  padding: 1px 8px; font-size: 11px; letter-spacing: 1px;
+  color: var(--red); border: 1px solid rgba(163, 39, 31, .55);
+  border-radius: 999px; background: rgba(255, 253, 247, .85);
+}
+.card.read .go { color: var(--gold); }
+.card .readcount { margin-top: 10px; font-size: 12.5px; color: var(--gold); letter-spacing: 1px; }
+
+/* 选卷页：阅读进度汇总条 */
+.read-summary {
+  display: flex; align-items: center; gap: 16px;
+  margin-top: 30px; padding: 13px 18px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+}
+.read-summary .rs-label { flex: 0 0 auto; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--red); }
+.read-summary .rs-bar { flex: 1; height: 6px; background: var(--paper2); border-radius: 3px; overflow: hidden; }
+.read-summary .rs-bar i {
+  display: block; height: 100%; width: 0; border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--red));
+  transition: width .3s ease;
+}
+.read-summary .rs-num { flex: 0 0 auto; font-size: 13px; color: var(--ink2); letter-spacing: 1px; }
+.read-summary.done .rs-num { color: var(--red); font-weight: 700; }
+
+/* 首页：继续阅读 */
+.resume {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 30px; padding: 14px 20px;
+  background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--red);
+  border-radius: 12px; text-decoration: none; color: var(--ink);
+  transition: box-shadow .12s ease, border-color .12s ease;
+}
+.resume:hover { border-color: var(--gold); border-left-color: var(--red); box-shadow: 0 8px 22px rgba(90, 70, 30, .14); }
+.resume .rs-kicker { flex: 0 0 auto; font-size: 12px; font-weight: 700; letter-spacing: 3px; color: var(--red); }
+.resume .rs-main { flex: 1; min-width: 0; font-size: 14px; line-height: 1.6; }
+.resume .rs-brand { color: var(--red-dark); font-weight: 700; margin-right: 6px; }
+.resume .rs-title { color: var(--ink); }
+.resume .rs-when { flex: 0 0 auto; font-size: 12px; color: #9a9080; }
+.resume .rs-go { flex: 0 0 auto; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: var(--red); }
+.resume:hover .rs-go { text-decoration: underline; }
+
+/* 小屏：顶栏收纳（藏版本标签，保证新按钮不溢出）；汇总条/继续阅读换行 */
+@media (max-width: 640px) {
+  #topbar { gap: 8px; padding: 10px 12px; }
+  #topbar .voltag { display: none; }
+  #topbar button, #topbar a.btn { padding: 5px 10px; font-size: 12.5px; }
+  .read-summary { flex-wrap: wrap; gap: 10px; }
+  .read-summary .rs-bar { flex-basis: 100%; order: 3; }
+  .resume { flex-wrap: wrap; gap: 8px; }
+  .resume .rs-main { flex-basis: 100%; order: 3; }
+  .resume .rs-when { margin-left: auto; }
+}
+@media print {
+  #readBtn, .read-progress, .read-summary, .resume, .read-toast, .card .readcount { display: none !important; }
+  .card.read::after { display: none !important; }
+}
