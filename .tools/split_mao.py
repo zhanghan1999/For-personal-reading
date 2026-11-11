@@ -35,6 +35,17 @@ PAREN = {
 def html_escape(t):
     return t
 
+# 注释条目的编号前缀：源文本里同一部书会出现 [1] / （1） / 〔1） / ［1］ 等 OCR 变体，
+# 一律认成「编号 + 正文」。只认带闭合括号的形式，避免把普通以数字开头的句子当注释。
+NOTE_LABEL = re.compile(r'^\s*(?:注释)?\s*[\[［【(（〔]\s*(\d{1,3})\s*[\]］】)）〕]\s*(.*)$', re.S)
+
+def split_note_label(text):
+    """'（1）正文' / '[1]正文' / '〔1）正文' → ('1', '正文')；认不出返回 None。"""
+    m = NOTE_LABEL.match(text)
+    if not m:
+        return None
+    return m.group(1), m.group(2).strip()
+
 def convert_refs(text, vol, art_idx):
     """把 ⑴ ⑵ ... 全角括号数字转为 fnref 上标，编号 = n<序号>。"""
     def rep(m):
@@ -214,9 +225,9 @@ def main():
             notes_html = []
             if a.get('notes'):
                 for nt in a['notes']:
-                    m = re.match(r'〔(\d+)〕(.*)', nt, flags=re.S)
-                    if m:
-                        n, body = m.group(1), m.group(2).strip()
+                    got = split_note_label(nt)
+                    if got:
+                        n, body = got
                         notes_html.append('<p class="note" id="v%da%d-n%s">[%s]&ensp;%s</p>' % (vol, i, n, n, body))
                     else:
                         notes_html.append('<p class="note">%s</p>' % nt.strip())
@@ -266,10 +277,10 @@ def main():
                 body_html.append('<h3 class="subhead">%s</h3>' % txt.strip())
         notes_html = []
         for nt in a.get('footnotes', []):
-            # 兼容两种格式："[1]xxx..." 或 "注释[1]xxx..."
-            m = re.match(r'(?:注释)?\[(\d+)\](.*)', nt, flags=re.S)
-            if m:
-                n, body = m.group(1), m.group(2).strip()
+            # 兼容 "[1]xxx" / "注释[1]xxx" / "（1）xxx" / "〔1）xxx" 等编号变体
+            got = split_note_label(nt)
+            if got:
+                n, body = got
                 notes_html.append('<p class="note" id="v%da%d-n%s">[%s]&ensp;%s</p>' % (vol, i, n, n, body))
             else:
                 notes_html.append('<p class="note">%s</p>' % nt.strip())
