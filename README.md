@@ -187,7 +187,8 @@ C:\导师文集\
 | `check_links.py` `check_all_links.py` `validate_all.py` `validate_site.py` 等 | 全站链接与结构校验（改完必跑）。 |
 | `check_fntip_all.py` | **脚注一致性体检**：逐页比对 `sup.fnref` 锚点与注释 id，报告坏锚点、注释条目缺 id、id 重复（按页面聚合；`--verbose` 列明细）。 |
 | `fix_note_ids.py` | **补齐脚注目标 id**（幂等）：注释条目漏了 id 就会「点了没反应」，脚本从该页 fnref 锚点反推 id 前缀、按条目自带的编号补 id 并统一成 `[N]&ensp;正文`；前缀不唯一或会撞 id 时整页跳过并报告。`--check` 只报告。 |
-| `test_anno.js` / `test_dz.js` / `test_read.js` / `test_toc.js` | jsdom 端到端测试（私人批注 / 补充注释 / 阅读进度 / 脚注点开 + 目录定位）。 |
+| `fix_note_dups.py` | **修复重复 id / 断裂注释**（幂等）：把「正文交叉引用被当成新注」的碎片接回原注释（如 `…注〔7〕。` 被拆成两条）、合并被断开的续段（如 `…第４８９` + `页）。`）、删除完全重复条目；分章重新编号的页面（鲁迅）按「上标编号 → 注释编号」改写成唯一 id（`lxn-1-2` 之类）；上标锚点 id 重复的加 `-2/-3`。编号本身乱掉的页面只做 id 唯一化并列入 needs-review。`--check` 只报告。 |
+| `test_anno.js` / `test_dz.js` / `test_read.js` / `test_toc.js` / `test_note_map.js` | jsdom 端到端测试（私人批注 / 补充注释 / 阅读进度 / 脚注点开 + 目录定位 / 上标→注释映射）。 |
 
 ## 8. 约定与红线（务必遵守）
 
@@ -217,7 +218,7 @@ C:\导师文集\
 - **全集增补/重跑**：马恩全集 → `python .tools/build_mew_full.py`（可选卷号调试，末尾自动瘦身）→ `python .tools/build_view_works.py`；斯大林全集 → 改 `.tools/sources/stalin/_toc.json` 后跑 `python .tools/build_stalin_quanji.py`（同样自动瘦身）。
 - **瘦身/体检**：`python .tools/slim_toc.py --check` 看还有多少内嵌目录；`python .tools/slim_toc.py` 执行外置。若 `slim_toc` 中途失败留下坏页，跑 `python .tools/fix_page_scripts.py` 修 `</script>` 并规范 `目录.js` 命名。
 - **重命名/删除某篇后**：`tocGroups`/`VOL_TOC`（即 `目录.js`）与“上一篇/下一篇”都不会自动改，必须整卷重建（全集群书一律重建，不要手改单页）。
-- **脚注点不开**：跑 `python .tools/check_fntip_all.py` 定位（坏锚点 / 注释条目缺 id），再用 `python .tools/fix_note_ids.py` 自动补 id（只补带编号的条目，幂等；先用 `--check` 看会改哪些）。注释条目本身在源文本里就缺的（如部分毛选旧卷、马恩全集个别页），页面会显示「本页未收录这条注释」，补 id 救不了——要补内容得回到源素材重跑对应 build 脚本。
+- **脚注点不开**：跑 `python .tools/check_fntip_all.py` 定位（坏锚点 / 注释条目缺 id / 注释 id 重复），再按类型修：缺 id → `python .tools/fix_note_ids.py`；id 重复、上下标编号错位、断裂注释 → `python .tools/fix_note_dups.py`（都幂等，先用 `--check` 看会改哪些）。注释条目本身在源文本里就缺的（如部分毛选旧卷、马恩全集个别页），页面会显示「本页未收录这条注释」，补 id 救不了——要补内容得回到源素材重跑对应 build 脚本。
 - **只改样式/脚本**：改 `assets/style.css` / `assets/app.js` / `assets/read.js`，全站即时生效（无缓存构建）。
 - **新增/重建导航页后**：跑 `python .tools/inject_read_js.py`（阅读进度展示）与 `python .tools/inject_quote_js.py`（轮换引言），两者幂等。
 - **验证全站**：`python .tools/check_all_links.py`、`python .tools/validate_all.py`。

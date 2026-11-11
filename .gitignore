@@ -17,6 +17,7 @@ __pycache__/
 .tools/test_quote.js
 .tools/test_read.js
 .tools/test_toc.js
+.tools/test_note_map.js
 .tools/check_out.txt
 
 # 中间产物/源数据（不入库，留本地）
