@@ -60,20 +60,26 @@ class Handler(SimpleHTTPRequestHandler):
                 self.send_error(403, 'forbidden')
                 return
             html = open(fp, encoding='utf-8').read()
-            new_html, n = MAIN_RE.subn(
-                '<main id="main">' + main_html + '</main>', html, count=1)
-            if n == 0:
+            # 用 match 的索引拼接，避开 re.sub 替换串里 \1/\g<1> 的转义
+            m = MAIN_RE.search(html)
+            if not m:
                 self.send_error(500, 'main not found')
                 return
-            tmp = fp + '.tmp'
-            with open(tmp, 'w', encoding='utf-8') as f:
-                f.write(new_html)
-            os.replace(tmp, fp)
+            new_html = (html[:m.start()] + '<main id="main">' + main_html + '</main>'
+                        + html[m.end():])
+            if new_html != html:
+                tmp = fp + '.tmp'
+                with open(tmp, 'w', encoding='utf-8') as f:
+                    f.write(new_html)
+                os.replace(tmp, fp)
+                print('文章已写回 -> %s' % fp)
+            else:
+                # 内容没变（如“保存空内容=删除新条目”），不是错误
+                print('文章无变化，跳过写入 -> %s' % fp)
             self.send_response(200)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.end_headers()
             self.wfile.write(b'{"ok":true}')
-            print('文章已写回 -> %s' % fp)
             sys.stdout.flush()
         except Exception as e:
             self.send_error(500, str(e))

@@ -900,15 +900,26 @@
   function genDzId() {
     return 'dz' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
   }
+  /* 标记该插在谁后面：整块上标（脚注 [1] / 已有补充注释）> 链接 > 私人下划线。
+   * 一定要插到这些元素的“后面”，不能插进它们内部：
+   * <sup class="fnref"> 的 UA font-size:smaller(≈0.83) 与 <a> 的 0.72em 会逐层相乘，
+   * 嵌进去的标记字号会被缩小一到两级，看起来比原版注释小；
+   * 下划线则会在写回时被剥掉。 */
+  function markerHost(node) {
+    var sup = null, other = null;
+    var n = node ? (node.nodeType === 1 ? node : node.parentNode) : null;
+    for (; n && n.nodeType === 1 && n.id !== 'main'; n = n.parentNode) {
+      var tag = n.tagName;
+      if (tag === 'SUP') { sup = n; break; }
+      if (!other && (tag === 'A' || (tag === 'U' && n.classList && n.classList.contains('anno')))) other = n;
+    }
+    return sup || other;
+  }
   function insertMarkerAtRangeEnd(range, marker) {
-    // 若选中终点落在私人下划线内，标记插到该下划线元素之后（不包进去，避免保存时被剥掉）
-    var n = range.endContainer;
-    while (n && n.nodeType === 1) {
-      if (n.tagName === 'U' && n.classList && n.classList.contains('anno')) {
-        n.parentNode.insertBefore(marker, n.nextSibling);
-        return;
-      }
-      n = n.parentNode;
+    var host = markerHost(range.endContainer);
+    if (host && host.parentNode) {
+      host.parentNode.insertBefore(marker, host.nextSibling);
+      return;
     }
     var node = range.endContainer, off = range.endOffset;
     if (node.nodeType === 3) {
@@ -921,6 +932,17 @@
     } else {
       node.insertBefore(marker, node.childNodes[off] || null);
     }
+  }
+  /* 老页面里已经被插进 <sup class="fnref"><a>…</a></sup> 内部的标记：
+   * 打开页面时把它挪到整个上标后面，字号才和原版注释同级（字号逐层相乘的问题见 markerHost） */
+  function normalizeDzMarkers() {
+    var list = Array.prototype.slice.call(document.querySelectorAll('sup.dzref'));
+    list.forEach(function (m) {
+      var host = markerHost(m.parentNode);
+      if (host && host.parentNode && host.contains(m)) {
+        host.parentNode.insertBefore(m, host.nextSibling);
+      }
+    });
   }
   /* 按标记在正文中的顺序统一重编号 + 重排底部列表，保证一一对应 */
   function renumberDz() {
@@ -942,6 +964,13 @@
   function dzNoteText(li) {
     var t = li.querySelector('.dztext');
     return t ? t.textContent : '';
+  }
+  /* 删掉一条补充注释：正文上标 + 文末条目；条目删空时连「读者补充注释」区一起收掉 */
+  function removeDzNote(marker, li) {
+    if (marker && marker.parentNode) marker.parentNode.removeChild(marker);
+    if (li && li.parentNode) li.parentNode.removeChild(li);
+    var sec = document.getElementById('dznotes');
+    if (sec && !sec.querySelector('.dznote')) sec.parentNode.removeChild(sec);
   }
   function addDzAnno() {
     if (!SERVER_MODE) {
@@ -1010,11 +1039,7 @@
         // 当前未锁定 -> 先保存当前输入，再锁定（空内容等同删除）
         var v = ta.value;
         if (!v.trim()) {
-          var m2 = dzState.marker, li2 = dzState.li;
-          if (m2 && m2.parentNode) m2.parentNode.removeChild(m2);
-          if (li2 && li2.parentNode) li2.parentNode.removeChild(li2);
-          var sec = document.getElementById('dznotes');
-          if (sec && !sec.querySelector('.dznote')) sec.parentNode.removeChild(sec);
+          removeDzNote(dzState.marker, dzState.li);
           renumberDz();
           dzEditor.style.display = 'none';
           dzState = null;
@@ -1041,14 +1066,10 @@
       ok.textContent = '保存';
       ok.addEventListener('click', function () {
         var v = ta.value;
-        var li = dzState.li, marker = dzState.marker;
         if (!v.trim()) {
-          if (marker && marker.parentNode) marker.parentNode.removeChild(marker);
-          if (li && li.parentNode) li.parentNode.removeChild(li);
-          var sec2 = document.getElementById('dznotes');
-          if (sec2 && !sec2.querySelector('.dznote')) sec2.parentNode.removeChild(sec2);
+          removeDzNote(dzState.marker, dzState.li);
         } else {
-          li.querySelector('.dztext').textContent = v;
+          dzState.li.querySelector('.dztext').textContent = v;
         }
         renumberDz();
         dzEditor.style.display = 'none';
@@ -1060,16 +1081,20 @@
     var cancel = document.createElement('button');
     cancel.textContent = '取消';
     cancel.addEventListener('click', function () {
-      if (dzState.isNew && dzState.marker) {           // 新建未保存：回滚空条目
-        var m2 = dzState.marker, li2 = dzState.li;
-        if (m2 && m2.parentNode) m2.parentNode.removeChild(m2);
-        if (li2 && li2.parentNode) li2.parentNode.removeChild(li2);
-        var sec3 = document.getElementById('dznotes');
-        if (sec3 && !sec3.querySelector('.dznote')) sec3.parentNode.removeChild(sec3);
+      var wasNew = dzState.isNew;
+      var empty = !ta.value.trim();
+      if (empty) {
+        // 取消时内容为空：和「保存空内容」一样按删除处理（新条目、被清空的旧条目都删掉）
+        removeDzNote(dzState.marker, dzState.li);
+        renumberDz();
+      } else if (wasNew) {
+        // 新建未保存：丢弃输入，回滚这条空条目
+        removeDzNote(dzState.marker, dzState.li);
         renumberDz();
       }
       dzEditor.style.display = 'none';
       dzState = null;
+      if (empty && !wasNew) persistDz();   // 旧条目被清空删除，要写回文章
     });
     btns.appendChild(cancel);
     dzEditor.appendChild(head);
@@ -1106,6 +1131,7 @@
   }
 
   /* ---- 载入批注数据（文件不存在则忽略） ---- */
+  normalizeDzMarkers();   // 老页面里嵌在脚注上标内部的补充注释标记先挪出来（字号才同级）
   updatePill();
   var s = document.createElement('script');
   s.src = SERVER_MODE ? ANNO_SRC + '?t=' + Date.now() : ANNO_SRC;   // http 下加时间戳防缓存

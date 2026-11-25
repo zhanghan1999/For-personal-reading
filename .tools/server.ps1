@@ -70,14 +70,22 @@ $handler = {
           return
         }
         $html = [System.IO.File]::ReadAllText($fp, [System.Text.Encoding]::UTF8)
-        $new = [regex]::Replace($html, '<main\b[^>]*>.*?</main>', '<main id="main">' + $data.mainHtml + '</main>', 'Singleline')
-        if ($new -eq $html) {
+        # 用 Match 的索引拼接，避开 .NET 替换串里 $1/$& 的转义（正文里出现 $ 也不会被吃掉）
+        $m = [regex]::Match($html, '<main\b[^>]*>.*?</main>', 'Singleline')
+        if (-not $m.Success) {
           Send-Text $resp 500 'text/plain; charset=utf-8' 'main not found'
           return
         }
-        [System.IO.File]::WriteAllText($fp, $new, [System.Text.Encoding]::UTF8)
+        $repl = '<main id="main">' + $data.mainHtml + '</main>'
+        $new = $html.Substring(0, $m.Index) + $repl + $html.Substring($m.Index + $m.Length)
+        if ($new -ne $html) {
+          [System.IO.File]::WriteAllText($fp, $new, [System.Text.Encoding]::UTF8)
+          Write-Host "文章已写回 -> $fp"
+        } else {
+          # 内容没变（例如“保存空内容=删除新条目”）不是错误，照常返回成功
+          Write-Host "文章无变化，跳过写入 -> $fp"
+        }
         Send-Json $resp 200 @{ ok = $true }
-        Write-Host "文章已写回 -> $fp"
       } else {
         Send-Text $resp 404 'text/plain; charset=utf-8' 'not found'
       }
