@@ -542,14 +542,54 @@
     menu.style.top = Math.min(y, window.innerHeight - h - 8) + 'px';
   }
 
+  /* ---- 浮层定位：先量真实尺寸再摆位，保证整个浮层留在视口内 ----
+   * 关键：必须在 display:block（但 visibility:hidden）下量 offsetWidth/offsetHeight，
+   * 否则 display:none 时量到 0，钳制失效 —— 浮层会伸出右/下边界，锁定、保存、取消都点不到。
+   * 下方放不下时优先翻到锚点上方；翻上去仍放不下则贴底并内部滚动。
+   * anchorTop：锚点（标记/选中行）的顶部，用于判断往上翻的位置。 */
+  var POPUP_PAD = 8;
+  function placePopup(el, x, y, anchorTop) {
+    el.style.maxWidth = '';
+    el.style.maxHeight = '';
+    el.style.overflowY = '';
+    el.style.visibility = 'hidden';
+    el.style.display = 'block';
+    el.style.left = '0px';
+    el.style.top = '0px';
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var w = el.offsetWidth, h = el.offsetHeight;
+    if (w > vw - POPUP_PAD * 2) {          // 窗口很窄/浏览器放大：先限宽再重量
+      el.style.maxWidth = Math.max(160, vw - POPUP_PAD * 2) + 'px';
+      w = el.offsetWidth;
+    }
+    var maxH = Math.max(120, vh - POPUP_PAD * 2);
+    if (h > maxH) {                        // 窗口很矮：限高 + 内部滚动，别让按钮掉出视口
+      el.style.maxHeight = maxH + 'px';
+      el.style.overflowY = 'auto';
+      h = Math.min(el.offsetHeight, maxH);
+    }
+    var left = Math.max(POPUP_PAD, Math.min(x, vw - w - POPUP_PAD));
+    var top = y;
+    if (top + h > vh - POPUP_PAD) {
+      var up = (typeof anchorTop === 'number' ? anchorTop : y) - h - POPUP_PAD;
+      top = (up >= POPUP_PAD) ? up : vh - h - POPUP_PAD;
+    }
+    top = Math.max(POPUP_PAD, Math.min(top, vh - h - POPUP_PAD));
+    el.style.left = Math.round(left) + 'px';
+    el.style.top = Math.round(top) + 'px';
+    el.style.visibility = '';
+  }
+
   /* ---- 批注编辑器弹窗 ---- */
   var editor = document.createElement('div');
   editor.className = 'anno-editor';
   editor.style.display = 'none';
   document.body.appendChild(editor);
   var editorState = null;
-  function openEditor(x, y, state) {
+  var editorAnchor = null;        // 编辑框锚点，窗口缩放/改尺寸时据此重新摆位
+  function openEditor(x, y, state, anchorTop) {
     editorState = state;
+    editorAnchor = {x: x, y: y, top: anchorTop};
     editor.innerHTML = '';
     var ta = document.createElement('textarea');
     ta.placeholder = '写下你的批注语句…（可留空，仅下划线）';
@@ -561,10 +601,7 @@
     cancel.addEventListener('click', function () { editor.style.display = 'none'; editorState = null; });
     btns.appendChild(cancel); btns.appendChild(ok);
     editor.appendChild(ta); editor.appendChild(btns);
-    editor.style.display = 'block';
-    var w = editor.offsetWidth, h = editor.offsetHeight;
-    editor.style.left = Math.min(x, window.innerWidth - w - 10) + 'px';
-    editor.style.top = Math.min(y, window.innerHeight - h - 10) + 'px';
+    placePopup(editor, x, y, anchorTop);
     ta.focus();
   }
   function commitEditor(note) {
@@ -615,7 +652,8 @@
     };
     var x = (sel && sel.rect) ? sel.rect.left + 8 : 120;
     var y = (sel && sel.rect) ? sel.rect.bottom + 8 : 120;
-    openEditor(x, y, {mode: 'add', anno: anno, text: text, offset: offset});
+    openEditor(x, y, {mode: 'add', anno: anno, text: text, offset: offset},
+               (sel && sel.rect) ? sel.rect.top : undefined);
   }
 
   /* ---- 编辑 / 删除 ---- */
@@ -628,7 +666,7 @@
     var anno = findAnnoByEl(u);
     if (!anno) return;
     var r = u.getBoundingClientRect();
-    openEditor(r.left, r.bottom + 8, {mode: 'edit', anno: anno, note: anno.note});
+    openEditor(r.left, r.bottom + 8, {mode: 'edit', anno: anno, note: anno.note}, r.top);
   }
   function delAnno(u) {
     var id = u.getAttribute('data-id');
@@ -763,7 +801,7 @@
         try {
           lastSel.range = window.getSelection().getRangeAt(0);
           var rr2 = window.getSelection().getRangeAt(0).getBoundingClientRect();
-          lastSel.rect = {left: rr2.left, bottom: rr2.bottom};
+          lastSel.rect = {left: rr2.left, top: rr2.top, bottom: rr2.bottom};
         } catch (e) {}
         items2.push(['添加补充注释', addDzAnno]);
       }
@@ -779,7 +817,7 @@
       try {
         lastSel.range = window.getSelection().getRangeAt(0);
         var rr = window.getSelection().getRangeAt(0).getBoundingClientRect();
-        lastSel.rect = {left: rr.left, bottom: rr.bottom};
+        lastSel.rect = {left: rr.left, top: rr.top, bottom: rr.bottom};
       } catch (e) {}
       showMenu(ev.clientX, ev.clientY, [
         ['添加下划线并批注', addAnno],
@@ -810,7 +848,17 @@
     if (!dzEditor.contains(ev.target)) { dzEditor.style.display = 'none'; dzState = null; }
   });
   window.addEventListener('scroll', function () { hideMenu(); hideTip(); }, {passive: true});
-  window.addEventListener('resize', function () { hideMenu(); hideTip(); });
+  window.addEventListener('resize', function () {
+    hideMenu();
+    hideTip();
+    // 窗口尺寸/浏览器缩放变化后按原锚点重新摆位，别让浮层被挤出视口
+    if (dzState && dzState.anchor && dzEditor.style.display === 'block') {
+      placePopup(dzEditor, dzState.anchor.left, dzState.anchor.bottom + 8, dzState.anchor.top);
+    }
+    if (editorAnchor && editor.style.display === 'block') {
+      placePopup(editor, editorAnchor.x, editorAnchor.y, editorAnchor.top);
+    }
+  });
   document.addEventListener('keydown', function (ev) {
     if (ev.key === 'Escape') {
       hideMenu();
@@ -931,13 +979,12 @@
     if (!sec) return;
     var li = sec.querySelector('.dznote[data-id="' + id + '"]');
     if (!li) return;
-    dzState = {id: id, marker: marker, li: li, isNew: !!isNew};
-    renderDzEditor();
-    var r = marker.getBoundingClientRect();
-    var w = dzEditor.offsetWidth, h = dzEditor.offsetHeight;
-    dzEditor.style.left = Math.min(r.left, window.innerWidth - w - 10) + 'px';
-    dzEditor.style.top = Math.min(r.bottom + 8, window.innerHeight - h - 10) + 'px';
-    dzEditor.style.display = 'block';
+    var r = marker.getBoundingClientRect();   // 先记下锚点，锁定/解锁重绘后仍按它定位
+    dzState = {
+      id: id, marker: marker, li: li, isNew: !!isNew,
+      anchor: {left: r.left, top: r.top, bottom: r.bottom}
+    };
+    renderDzEditor();                          // 内部负责量尺寸 + 摆位
     if (li.getAttribute('data-locked') !== '1') dzEditor.querySelector('textarea').focus();
   }
   function renderDzEditor() {
@@ -1028,6 +1075,10 @@
     dzEditor.appendChild(head);
     dzEditor.appendChild(ta);
     dzEditor.appendChild(btns);
+    // 每次重绘（含锁定/解锁后按钮数量变化）都按锚点重新摆位，避免高度变化后越界
+    if (dzState && dzState.anchor) {
+      placePopup(dzEditor, dzState.anchor.left, dzState.anchor.bottom + 8, dzState.anchor.top);
+    }
   }
   function persistDz() {
     if (!SERVER_MODE) return;
